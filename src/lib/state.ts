@@ -14,3 +14,16 @@ export function setBlackHole(choice: BlackHoleType): void {
 export function getBlackHole(): BlackHoleType | null {
   return selectedBlackHole;
 }
+
+// The fall's progress lives here as a plain number, never derived from
+// element geometry or scroll position -- so a viewport resize can't disturb
+// it, and the fall simulation survives a reflow for free.
+let fallProgress = 0;
+
+export function setFallProgress(value: number): void {
+  fallProgress = value;
+}
+
+export function getFallProgress(): number {
+  return fallProgress;
+}

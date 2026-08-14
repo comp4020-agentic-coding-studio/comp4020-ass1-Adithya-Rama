@@ -47,6 +47,7 @@ const supermassiveStats = [
         />
         <div class="gravity-glow" aria-hidden="true"></div>
         <div class="split-line" aria-hidden="true"></div>
+        <div class="lensing-vignette" aria-hidden="true"></div>
       </div>
 
       <PrimaryNav />
@@ -162,11 +163,64 @@ const supermassiveStats = [
         </section>
 
         <section class="scene scene-falling" aria-hidden="true" inert>
-          <h2>The fall begins</h2>
-          <p class="scene-selecting-meta">
-            Both clocks agreed. What happens to them next is where you and Earth stop
-            agreeing -- that divergence is the next stage of this experience.
+          <h2>Falling</h2>
+          <p class="scene-hint" id="fall-hint">
+            Hold the control below, or hold Arrow Down / S, to descend. Release to hold your
+            position.
           </p>
+
+          <div class="fall-stage">
+            <div class="fall-side fall-side-you">
+              <img
+                class="fall-hand"
+                src={withBase("img/astronaut-glove.webp")}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+              />
+              <span class="sync-label">You</span>
+              <span class="fall-clock" id="fall-clock-you">00:00:00</span>
+              <p class="fall-readout" id="fall-readout-you">Distance to horizon: 100%</p>
+            </div>
+
+            <div class="fall-side fall-side-earth">
+              <img
+                class="fall-astronaut"
+                src={withBase("img/astronaut-reach-cool.webp")}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+              />
+              <span class="sync-label">Earth observer</span>
+              <span class="fall-clock" id="fall-clock-earth">00:00:00</span>
+              <p class="fall-readout" id="fall-readout-earth">Signal: strong</p>
+            </div>
+          </div>
+
+          <p class="fall-caption" id="fall-caption">Redshift ×1.0 · Tidal stress: mild</p>
+
+          <ol class="fall-timeline" aria-label="Fall stage">
+            <li class="fall-timeline-step is-active" data-stage="approach" aria-current="step">
+              Approach
+            </li>
+            <li class="fall-timeline-step" data-stage="horizon">Horizon</li>
+            <li class="fall-timeline-step" data-stage="interior">Interior / Tidal outcome</li>
+          </ol>
+
+          <p class="visually-hidden" aria-live="polite" id="fall-status"></p>
+
+          <div class="hero-cta">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="descend-control"
+              data-testid="descend-control"
+              aria-describedby="fall-hint"
+              aria-pressed="false"
+            >
+              Hold to descend
+            </button>
+          </div>
         </section>
       </main>
     </div>
@@ -445,6 +499,145 @@ const supermassiveStats = [
     animation: connector-pulse 0.9s var(--ease-standard);
   }
 
+  /* the lensing vignette lives on the persistent background layer, so its
+     intensity (set on .experience via --fall-lensing) reaches it by plain
+     custom-property inheritance -- no per-scene wiring needed. */
+  .lensing-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 45%, transparent 30%, rgb(0 0 0 / 70%) 100%);
+    opacity: 0;
+    transition: opacity var(--duration-medium) var(--ease-standard);
+  }
+
+  .experience[data-scene="falling"] .lensing-vignette {
+    opacity: var(--fall-lensing, 0);
+  }
+
+  .experience[data-scene="falling"] .gravity-glow {
+    transform: scale(calc(1 + var(--fall-lensing, 0) * 0.4));
+    transition: transform var(--duration-medium) var(--ease-standard);
+  }
+
+  .fall-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xl);
+    width: 100%;
+    max-width: 48rem;
+  }
+
+  .fall-side {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2xs);
+  }
+
+  .fall-side-you .sync-label {
+    color: var(--color-you);
+  }
+
+  .fall-side-earth .sync-label {
+    color: var(--color-earth);
+  }
+
+  .fall-clock {
+    font-family: var(--font-mono);
+    font-size: var(--text-h2);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+  }
+
+  .fall-readout {
+    margin: 0;
+    font-size: var(--text-small);
+    color: var(--color-text-dim);
+  }
+
+  .fall-hand {
+    width: 5rem;
+    opacity: 0.4;
+    pointer-events: none;
+    transform: scale(calc(1 + var(--fall-lensing, 0) * 0.15));
+    transition: transform var(--duration-medium) var(--ease-standard);
+  }
+
+  .fall-astronaut {
+    width: 6rem;
+    border-radius: var(--radius-md);
+    opacity: var(--fall-brightness, 1);
+    filter: sepia(var(--fall-warmth, 0)) blur(var(--fall-motion-blur, 0px));
+    transition:
+      opacity var(--duration-medium) var(--ease-standard),
+      filter var(--duration-medium) var(--ease-standard);
+  }
+
+  .fall-caption {
+    margin: 0;
+    font-size: var(--text-small);
+    color: var(--color-text-faint);
+  }
+
+  .fall-timeline {
+    display: flex;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-label);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  .fall-timeline-step {
+    position: relative;
+    padding-left: var(--space-sm);
+  }
+
+  .fall-timeline-step::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: var(--color-text-faint);
+  }
+
+  .fall-timeline-step.is-active {
+    color: var(--color-text);
+  }
+
+  .fall-timeline-step.is-active::before {
+    background: var(--color-you);
+    box-shadow: var(--glow-you);
+  }
+
+  .fall-timeline-step.is-complete {
+    color: var(--color-text-dim);
+  }
+
+  .fall-timeline-step.is-complete::before {
+    background: var(--color-you-dim);
+  }
+
+  #descend-control {
+    touch-action: none;
+  }
+
+  #descend-control[aria-pressed="true"] {
+    background: var(--color-you-dim);
+    box-shadow: var(--glow-you);
+  }
+
   @keyframes hero-drift {
     from {
       transform: scale(1.04) translate(0, 0);
@@ -606,6 +799,19 @@ const supermassiveStats = [
 
     .sync-stage.synced .sync-connector-pulse {
       animation-name: connector-pulse-vertical;
+    }
+
+    .fall-stage {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .fall-hand {
+      width: 3.5rem;
+    }
+
+    .fall-astronaut {
+      width: 4.5rem;
     }
   }
 

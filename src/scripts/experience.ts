@@ -3,7 +3,8 @@
 // panel is visible/interactive, not a page navigation. Kept intentionally
 // tiny: this is the first client-side JS in the project (see CLAUDE.md,
 // "prefer the simplest architecture that satisfies the contract").
-import { getBlackHole, setBlackHole, type BlackHoleType } from "../lib/state";
+import { getBlackHole, setBlackHole, getFallProgress, setFallProgress, type BlackHoleType } from "../lib/state";
+import { computeFallMetrics, formatClock, describeSignal, describeTidalStress, MAX_FALL_PROGRESS } from "../lib/fall-sim";
 
 export function initExperience(): void {
   const root = document.querySelector<HTMLElement>('[data-testid="interaction-output"]');
@@ -81,7 +82,124 @@ export function initExperience(): void {
     if (beginDescentButton) beginDescentButton.hidden = false;
   });
 
-  beginDescentButton?.addEventListener("click", () => showScene("falling"));
+  // -- the fall itself: a single normalized progress number (0..MAX_FALL_PROGRESS)
+  // drives every derived readout. Held in state.ts, not local scope, so a
+  // viewport resize can never disturb it.
+  const HORIZON_ZONE_START = 0.7;
+  const DESCEND_RATE_PER_SECOND = 0.1;
+
+  const descendControl = root.querySelector<HTMLButtonElement>("#descend-control");
+  const fallStatus = root.querySelector<HTMLElement>("#fall-status");
+  const fallClockYou = root.querySelector<HTMLElement>("#fall-clock-you");
+  const fallClockEarth = root.querySelector<HTMLElement>("#fall-clock-earth");
+  const fallReadoutYou = root.querySelector<HTMLElement>("#fall-readout-you");
+  const fallReadoutEarth = root.querySelector<HTMLElement>("#fall-readout-earth");
+  const fallCaption = root.querySelector<HTMLElement>("#fall-caption");
+  const timelineSteps = root.querySelectorAll<HTMLElement>(".fall-timeline-step");
+
+  function renderFall(progress: number): void {
+    if (!root) return;
+    const metrics = computeFallMetrics(progress, getBlackHole());
+    setFallProgress(metrics.progress);
+
+    if (fallClockYou) fallClockYou.textContent = formatClock(metrics.properTimeSeconds);
+    if (fallClockEarth) fallClockEarth.textContent = formatClock(metrics.observedTimeSeconds);
+    if (fallReadoutYou) {
+      fallReadoutYou.textContent = `Distance to horizon: ${metrics.distanceToHorizonPercent}%`;
+    }
+    if (fallReadoutEarth) {
+      fallReadoutEarth.textContent = `Signal: ${describeSignal(metrics.signalStrength)}`;
+    }
+    if (fallCaption) {
+      fallCaption.textContent = `Redshift ×${metrics.redshiftFactor.toFixed(1)} · Tidal stress: ${describeTidalStress(metrics.tidalStress)}`;
+    }
+
+    root.style.setProperty("--fall-lensing", String(metrics.lensingIntensity));
+    root.style.setProperty("--fall-warmth", String(Math.min(1, (metrics.redshiftFactor - 1) / 3)));
+    root.style.setProperty("--fall-brightness", String(metrics.observerBrightness));
+    root.style.setProperty("--fall-motion-blur", `${(metrics.apparentVelocity * 2).toFixed(2)}px`);
+
+    const stage = metrics.progress >= HORIZON_ZONE_START ? "horizon" : "approach";
+    timelineSteps.forEach((step) => {
+      const isActive = step.dataset.stage === stage;
+      const isComplete = stage === "horizon" && step.dataset.stage === "approach";
+      step.classList.toggle("is-active", isActive);
+      step.classList.toggle("is-complete", isComplete);
+      if (isActive) {
+        step.setAttribute("aria-current", "step");
+      } else {
+        step.removeAttribute("aria-current");
+      }
+    });
+
+    if (descendControl && metrics.progress >= MAX_FALL_PROGRESS) {
+      descendControl.disabled = true;
+      descendControl.textContent = "At the threshold";
+    }
+  }
+
+  let holding = false;
+  let lastFrameTime: number | null = null;
+  let frameHandle = 0;
+
+  function step(timestamp: number): void {
+    if (!holding) return;
+    if (lastFrameTime !== null) {
+      const deltaSeconds = (timestamp - lastFrameTime) / 1000;
+      renderFall(getFallProgress() + deltaSeconds * DESCEND_RATE_PER_SECOND);
+    }
+    lastFrameTime = timestamp;
+    if (getFallProgress() >= MAX_FALL_PROGRESS) {
+      stopHold();
+      return;
+    }
+    frameHandle = requestAnimationFrame(step);
+  }
+
+  function startHold(): void {
+    if (holding || getFallProgress() >= MAX_FALL_PROGRESS) return;
+    holding = true;
+    lastFrameTime = null;
+    descendControl?.setAttribute("aria-pressed", "true");
+    if (fallStatus) fallStatus.textContent = "Descending.";
+    frameHandle = requestAnimationFrame(step);
+  }
+
+  function stopHold(): void {
+    if (!holding) return;
+    holding = false;
+    cancelAnimationFrame(frameHandle);
+    descendControl?.setAttribute("aria-pressed", "false");
+    if (fallStatus) {
+      fallStatus.textContent =
+        getFallProgress() >= MAX_FALL_PROGRESS ? "Holding at the threshold." : "Holding position.";
+    }
+  }
+
+  descendControl?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    startHold();
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach((name) => {
+    descendControl?.addEventListener(name, () => stopHold());
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (root.dataset.scene !== "falling") return;
+    if (event.code !== "ArrowDown" && event.code !== "KeyS") return;
+    if (event.repeat) return;
+    event.preventDefault();
+    startHold();
+  });
+  window.addEventListener("keyup", (event) => {
+    if (event.code !== "ArrowDown" && event.code !== "KeyS") return;
+    stopHold();
+  });
+
+  beginDescentButton?.addEventListener("click", () => {
+    renderFall(getFallProgress());
+    showScene("falling");
+  });
 }
 
 initExperience();
