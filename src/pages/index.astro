@@ -3,7 +3,22 @@ import "../styles/global.css";
 import "../styles/button.css";
 import Starfield from "../components/Starfield.astro";
 import PrimaryNav from "../components/PrimaryNav.astro";
+import BlackHoleOption from "../components/BlackHoleOption.astro";
 import { withBase } from "../lib/base";
+
+const stellarStats = [
+  { label: "Conceptual mass", value: "~10 solar masses" },
+  { label: "Approximate event horizon scale", value: "~30 km" },
+  { label: "Tidal forces at horizon", value: "Extreme" },
+  { label: "Likelihood of surviving horizon crossing", value: "Very poor" },
+];
+
+const supermassiveStats = [
+  { label: "Conceptual mass", value: "millions of solar masses" },
+  { label: "Event horizon", value: "vast" },
+  { label: "Tidal forces at horizon", value: "much milder" },
+  { label: "Likelihood of crossing the horizon intact", value: "possible" },
+];
 ---
 
 <!doctype html>
@@ -62,7 +77,47 @@ import { withBase } from "../lib/base";
 
         <section class="scene scene-selecting" aria-hidden="true" inert>
           <h2>Choose your black hole</h2>
-          <p class="scene-selecting-meta">Selection continues in the next stage of the experience.</p>
+          <p class="scene-question">Which one is safer to fall into?</p>
+          <p class="scene-hint">Hover, focus, or select each to compare.</p>
+
+          <fieldset class="blackhole-choice">
+            <legend class="visually-hidden">Select a black hole to fall into</legend>
+            <div class="blackhole-options">
+              <BlackHoleOption
+                value="stellar"
+                name="blackhole"
+                image="img/blackhole-stellar.webp"
+                alt="A tilted blue accretion disk representing a stellar-mass black hole"
+                title="Stellar black hole"
+                stats={stellarStats}
+              />
+              <BlackHoleOption
+                value="supermassive"
+                name="blackhole"
+                image="img/blackhole-supermassive.webp"
+                alt="A tilted amber accretion disk representing a supermassive black hole"
+                title="Supermassive black hole"
+                stats={supermassiveStats}
+              />
+            </div>
+          </fieldset>
+
+          <div class="hero-cta">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="start-descent"
+              data-testid="start-descent"
+              disabled
+            >
+              Start descent
+            </button>
+          </div>
+        </section>
+
+        <section class="scene scene-descending" aria-hidden="true" inert>
+          <h2>Descent initiated</h2>
+          <p class="scene-selecting-meta" id="descent-summary"></p>
         </section>
       </main>
     </div>
@@ -119,6 +174,7 @@ import { withBase } from "../lib/base";
     justify-content: space-between;
     padding: 0 var(--space-lg);
     pointer-events: none;
+    transition: opacity var(--duration-medium) var(--ease-standard);
   }
 
   .duality-label {
@@ -138,6 +194,13 @@ import { withBase } from "../lib/base";
     text-shadow: 0 0 12px var(--color-earth-dim);
   }
 
+  /* the duality labels sit at vertical center, which is exactly where the
+     selecting/descending scenes place their own content -- fade them out
+     once we've moved past the hero rather than let them collide. */
+  .experience:not([data-scene="hero"]) .duality-labels {
+    opacity: 0;
+  }
+
   .layer-hud {
     display: flex;
     flex-direction: column;
@@ -155,15 +218,46 @@ import { withBase } from "../lib/base";
     justify-content: center;
     gap: var(--space-lg);
     padding: var(--space-2xl) var(--space-md);
+    overflow-y: auto;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--duration-slow) var(--ease-standard);
   }
 
   .experience[data-scene="hero"] .scene-hero,
-  .experience[data-scene="selecting"] .scene-selecting {
+  .experience[data-scene="selecting"] .scene-selecting,
+  .experience[data-scene="descending"] .scene-descending {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .blackhole-choice {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    width: 100%;
+    max-width: 44rem;
+  }
+
+  .blackhole-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-lg);
+  }
+
+  .scene-question {
+    margin: 0;
+    font-size: var(--text-h2);
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .scene-hint {
+    margin: calc(var(--space-xs) * -1) 0 0;
+    font-size: var(--text-small);
+    color: var(--color-text-faint);
   }
 
   .hero-title {
@@ -291,6 +385,17 @@ import { withBase } from "../lib/base";
 
     .hero-narrative {
       font-size: var(--text-small);
+    }
+
+    .scene {
+      gap: var(--space-md);
+      padding: var(--space-xl) var(--space-sm);
+    }
+
+    .blackhole-options {
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
     }
   }
 

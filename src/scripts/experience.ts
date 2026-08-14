@@ -3,6 +3,8 @@
 // panel is visible/interactive, not a page navigation. Kept intentionally
 // tiny: this is the first client-side JS in the project (see CLAUDE.md,
 // "prefer the simplest architecture that satisfies the contract").
+import { getBlackHole, setBlackHole, type BlackHoleType } from "../lib/state";
+
 export function initExperience(): void {
   const root = document.querySelector<HTMLElement>('[data-testid="interaction-output"]');
   const beginButton = document.querySelector<HTMLButtonElement>('[data-testid="interaction"]');
@@ -34,6 +36,32 @@ export function initExperience(): void {
   }
 
   beginButton.addEventListener("click", () => showScene("selecting"));
+
+  const blackHoleInputs = root.querySelectorAll<HTMLInputElement>('input[name="blackhole"]');
+  const startDescentButton = root.querySelector<HTMLButtonElement>("#start-descent");
+  const descentSummary = root.querySelector<HTMLElement>("#descent-summary");
+
+  const descentCopy: Record<BlackHoleType, string> = {
+    stellar: "Falling toward the stellar black hole. Tidal forces here are extreme.",
+    supermassive: "Falling toward the supermassive black hole. Tidal forces here are much milder.",
+  };
+
+  blackHoleInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      const choice: BlackHoleType = input.value === "supermassive" ? "supermassive" : "stellar";
+      setBlackHole(choice);
+      if (startDescentButton) startDescentButton.disabled = false;
+    });
+  });
+
+  startDescentButton?.addEventListener("click", () => {
+    const choice = getBlackHole();
+    if (descentSummary && choice) {
+      descentSummary.textContent = descentCopy[choice];
+    }
+    showScene("descending");
+  });
 }
 
 initExperience();
