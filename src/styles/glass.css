@@ -1,0 +1,17 @@
+.glass {
+  background: var(--surface-glass-bg);
+  border: var(--border-hairline);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(var(--surface-glass-blur));
+  box-shadow: var(--glow-soft);
+}
+
+.glass-you {
+  border-color: var(--color-you-dim);
+  box-shadow: var(--glow-you);
+}
+
+.glass-earth {
+  border-color: var(--color-earth-dim);
+  box-shadow: var(--glow-earth);
+}

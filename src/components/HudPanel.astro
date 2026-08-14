@@ -1,0 +1,27 @@
+---
+import "../styles/glass.css";
+import "../styles/hud.css";
+
+interface Props {
+  variant: "you" | "earth";
+  label: string;
+  value: string;
+  meta?: string;
+  fill?: number;
+}
+
+const { variant, label, value, meta, fill } = Astro.props;
+---
+
+<div class:list={["glass", `glass-${variant}`, "hud-panel", `hud-panel-${variant}`]}>
+  <span class="hud-panel-label">{label}</span>
+  <span class="hud-panel-value">{value}</span>
+  {meta && <span class="hud-panel-meta">{meta}</span>}
+  {
+    fill !== undefined && (
+      <div class="hud-bar">
+        <div class="hud-bar-fill" style={`--hud-bar-fill:${fill}%`} />
+      </div>
+    )
+  }
+</div>

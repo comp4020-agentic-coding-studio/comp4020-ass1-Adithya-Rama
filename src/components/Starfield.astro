@@ -1,0 +1,25 @@
+---
+// Generated once at build time from a fixed seed -- no client JS, no
+// runtime randomness, so the same layout ships every time and the CSS
+// keyframes (see starfield.css) are the only thing that ever moves.
+import "../styles/starfield.css";
+import { generateStars } from "../lib/starfield";
+
+interface Props {
+  count?: number;
+}
+
+const { count = 140 } = Astro.props;
+const stars = generateStars(count);
+---
+
+<div class="starfield" aria-hidden="true">
+  {
+    stars.map((star) => (
+      <span
+        class="starfield-star"
+        style={`--x:${star.x}%; --y:${star.y}%; --size:${star.size}px; --base-opacity:${star.baseOpacity}; --duration:${star.duration}s; --delay:${star.delay}s;`}
+      />
+    ))
+  }
+</div>

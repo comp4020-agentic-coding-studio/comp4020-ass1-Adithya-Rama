@@ -1,0 +1,55 @@
+.hud-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-sm) var(--space-md);
+  min-width: 11rem;
+}
+
+.hud-panel-label {
+  font-size: var(--text-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.hud-panel-value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.hud-panel-you .hud-panel-value {
+  color: var(--color-you-strong);
+}
+
+.hud-panel-earth .hud-panel-value {
+  color: var(--color-earth-strong);
+}
+
+.hud-panel-meta {
+  font-size: var(--text-small);
+  color: var(--color-text-faint);
+}
+
+.hud-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  overflow: hidden;
+}
+
+.hud-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: var(--hud-bar-fill, 50%);
+  border-radius: inherit;
+  background: var(--color-you);
+  transition: width var(--duration-medium) var(--ease-standard);
+}
+
+.hud-panel-earth .hud-bar-fill {
+  background: var(--color-earth);
+}

@@ -1,0 +1,32 @@
+---
+// Deliberately not a conventional navbar (see CLAUDE.md "Visual quality"):
+// a single small wordmark link, positioned over the scene rather than
+// occupying a horizontal bar across the top of the viewport.
+---
+
+<nav aria-label="Primary" class="primary-nav">
+  <a href={import.meta.env.BASE_URL} class="primary-nav-mark">FALL</a>
+</nav>
+
+<style>
+  .primary-nav {
+    position: absolute;
+    top: var(--space-md);
+    left: var(--space-md);
+    z-index: var(--z-overlay);
+  }
+
+  .primary-nav-mark {
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-text-dim);
+  }
+
+  .primary-nav-mark:hover,
+  .primary-nav-mark:focus-visible {
+    color: var(--color-text);
+  }
+</style>

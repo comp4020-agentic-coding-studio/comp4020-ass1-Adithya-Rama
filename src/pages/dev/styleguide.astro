@@ -1,0 +1,206 @@
+---
+// Debug/visual-inspection route for the shared foundation (tokens, glass,
+// HUD, buttons, starfield). Not part of the experience -- a way to eyeball
+// every component in isolation, including that every optimized asset
+// resolves under the GitHub Pages base path.
+import "../../styles/global.css";
+import "../../styles/button.css";
+import Starfield from "../../components/Starfield.astro";
+import PrimaryNav from "../../components/PrimaryNav.astro";
+import HudPanel from "../../components/HudPanel.astro";
+import { withBase } from "../../lib/base";
+
+const images = [
+  ["blackhole-split", "Symmetric black hole splitting light into a cyan stream and an amber stream"],
+  ["blackhole-split-earth", "The same split black hole with Earth visible in the distance"],
+  ["blackhole-split-wave", "The split black hole with a rippled waveform running through its light streams"],
+  ["blackhole-split-astronaut", "The split black hole with a tiny astronaut silhouette receding on the amber side"],
+  ["blackhole-stellar", "A tilted blue accretion disk representing a stellar-mass black hole"],
+  ["blackhole-supermassive", "A tilted amber accretion disk representing a supermassive black hole"],
+  ["astronaut-glove", "A gloved hand reaching forward, rim-lit from blue to amber"],
+  ["astronaut-reach-warm", "A suited astronaut floating and reaching, lit with a warm amber rim light"],
+  ["astronaut-spaghetti", "An astronaut stretched into a thin glowing thread by tidal forces"],
+  ["astronaut-reach-cool", "A suited astronaut floating and reaching, lit with a cool blue rim light"],
+] as const;
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual foundation — styleguide — FALL</title>
+  </head>
+  <body>
+    <PrimaryNav />
+
+    <main class="styleguide">
+      <h1>Visual foundation</h1>
+      <p class="styleguide__intro">
+        Shared tokens and components for the FALL experience, shown in isolation for inspection.
+        Not part of the visitor-facing site.
+      </p>
+
+      <section aria-labelledby="colors-heading">
+        <h2 id="colors-heading">Color</h2>
+        <div class="swatches">
+          <div class="swatch" style="background: var(--color-bg)">bg</div>
+          <div class="swatch" style="background: var(--color-bg-elevated)">bg-elevated</div>
+          <div class="swatch" style="background: var(--color-you); color:#01121a">you</div>
+          <div class="swatch" style="background: var(--color-earth); color:#1a0900">earth</div>
+          <div class="swatch" style="background: var(--color-danger)">danger</div>
+          <div class="swatch" style="background: var(--color-warning); color:#1a1200">warning</div>
+        </div>
+      </section>
+
+      <section aria-labelledby="type-heading">
+        <h2 id="type-heading">Type scale</h2>
+        <p style="font-size: var(--text-hero)">Hero</p>
+        <p style="font-size: var(--text-h2)">Heading</p>
+        <p style="font-size: var(--text-body)">Body text</p>
+        <p style="font-size: var(--text-small)">Small text</p>
+        <p style="font-size: var(--text-label); letter-spacing:0.14em; text-transform:uppercase;">Label</p>
+      </section>
+
+      <section aria-labelledby="buttons-heading">
+        <h2 id="buttons-heading">Buttons</h2>
+        <a class="btn btn-primary" href="#buttons-heading">Begin fall →</a>
+      </section>
+
+      <section aria-labelledby="glass-heading">
+        <h2 id="glass-heading">Glass surfaces</h2>
+        <div class="glass-demo">
+          <div class="glass glass-you demo-box">glass-you</div>
+          <div class="glass glass-earth demo-box">glass-earth</div>
+        </div>
+      </section>
+
+      <section aria-labelledby="hud-heading">
+        <h2 id="hud-heading">HUD panels</h2>
+        <div class="hud-demo">
+          <HudPanel variant="you" label="Your clock" value="00:10:24" meta="proper time" fill={72} />
+          <HudPanel variant="earth" label="Earth clock" value="03:41:09" meta="coordinate time" fill={28} />
+        </div>
+      </section>
+
+      <section aria-labelledby="starfield-heading">
+        <h2 id="starfield-heading">Starfield</h2>
+        <div class="starfield-demo layer-bg">
+          <Starfield count={80} />
+        </div>
+      </section>
+
+      <section aria-labelledby="assets-heading">
+        <h2 id="assets-heading">Production assets (base path check)</h2>
+        <p class="styleguide__intro">
+          Each thumbnail below is loaded from <code>{withBase("img/")}</code> to confirm asset paths
+          resolve correctly once deployed under the GitHub Pages subpath.
+        </p>
+        <div class="asset-grid">
+          {
+            images.map(([name, alt]) => (
+              <figure class="asset-grid__item">
+                <img src={withBase(`img/${name}.webp`)} alt={alt} loading="lazy" />
+                <figcaption>{name}</figcaption>
+              </figure>
+            ))
+          }
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  .styleguide {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: var(--space-2xl) var(--space-md) var(--space-2xl);
+  }
+
+  .styleguide h1 {
+    font-size: var(--text-hero);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .styleguide__intro {
+    color: var(--color-text-dim);
+    max-width: 40rem;
+  }
+
+  section {
+    margin-top: var(--space-xl);
+  }
+
+  section h2 {
+    font-size: var(--text-h2);
+    border-bottom: var(--border-hairline);
+    padding-bottom: var(--space-2xs);
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .swatch {
+    width: 8rem;
+    height: 4rem;
+    border-radius: var(--radius-sm);
+    border: var(--border-hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-small);
+  }
+
+  .glass-demo,
+  .hud-demo {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .demo-box {
+    width: 12rem;
+    height: 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .starfield-demo {
+    position: relative;
+    height: 16rem;
+    border-radius: var(--radius-md);
+    border: var(--border-hairline);
+    overflow: hidden;
+  }
+
+  .asset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .asset-grid__item {
+    margin: 0;
+    background: var(--color-bg-elevated);
+    border: var(--border-hairline);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .asset-grid__item img {
+    width: 100%;
+    height: 6rem;
+    object-fit: cover;
+  }
+
+  .asset-grid__item figcaption {
+    padding: var(--space-2xs);
+    font-size: var(--text-small);
+    color: var(--color-text-faint);
+  }
+</style>

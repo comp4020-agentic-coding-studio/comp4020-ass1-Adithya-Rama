@@ -1,5 +1,10 @@
 ---
 import "../styles/global.css";
+import "../styles/button.css";
+import Starfield from "../components/Starfield.astro";
+import PrimaryNav from "../components/PrimaryNav.astro";
+import HudPanel from "../components/HudPanel.astro";
+import { withBase } from "../lib/base";
 ---
 
 <!doctype html>
@@ -7,21 +12,109 @@ import "../styles/global.css";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>COMP4020 prototype</title>
+    <title>FALL — One journey. Two realities.</title>
+    <meta
+      name="description"
+      content="An interactive explainer of gravitational time dilation: an infalling astronaut and a distant Earth observer share one event and never agree on how long it took."
+    />
   </head>
   <body>
-    <header>
-      <nav aria-label="Primary">
-        <a href={import.meta.env.BASE_URL}>Home</a>
-      </nav>
-    </header>
-    <main>
-      <h1>COMP4020 prototype</h1>
-      <p data-testid="intro">
-        Replace this with your interactive explainer. The brief is on the
-        course website; <code>spec/README.md</code> explains how the checks in
-        this repo relate to it.
-      </p>
-    </main>
+    <div class="experience" data-scene="hero">
+      <div class="layer layer-bg"></div>
+      <div class="layer layer-atmosphere">
+        <Starfield />
+      </div>
+      <div class="layer layer-scene">
+        <img
+          class="hero-image"
+          src={withBase("img/blackhole-split-earth.webp")}
+          alt="A black hole splitting starlight into a cyan stream on one side and an amber stream on the other, with Earth visible in the distance"
+          fetchpriority="high"
+        />
+      </div>
+
+      <PrimaryNav />
+
+      <div class="layer layer-hud">
+        <header class="hero-copy">
+          <h1 class="hero-title">FALL</h1>
+          <p class="hero-tagline">One journey. Two realities.</p>
+        </header>
+
+        <main class="hero-hud">
+          <HudPanel variant="you" label="Your clock" value="00:10:24" meta="proper time" />
+          <HudPanel variant="earth" label="Earth clock" value="00:10:24" meta="coordinate time" />
+        </main>
+
+        <div class="hero-cta">
+          <a class="btn btn-primary" href={withBase("dev/styleguide")}>Begin fall →</a>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
+
+<style>
+  .hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+  }
+
+  .layer-hud {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-2xl) var(--space-md) var(--space-xl);
+    text-align: center;
+  }
+
+  .hero-copy {
+    margin-top: var(--space-xl);
+  }
+
+  .hero-title {
+    margin: 0;
+    font-size: var(--text-hero);
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--color-text);
+    text-shadow: var(--glow-soft);
+  }
+
+  .hero-tagline {
+    margin: var(--space-xs) 0 0;
+    font-size: var(--text-body);
+    color: var(--color-text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .hero-hud {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .hero-hud > :global(*) {
+    text-align: left;
+  }
+
+  .hero-cta {
+    display: flex;
+    justify-content: center;
+  }
+
+  @media (max-width: 40rem) {
+    .layer-hud {
+      padding: var(--space-lg) var(--space-sm) var(--space-lg);
+    }
+
+    .hero-hud {
+      justify-content: center;
+    }
+  }
+</style>

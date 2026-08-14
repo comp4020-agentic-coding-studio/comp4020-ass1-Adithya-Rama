@@ -1,0 +1,88 @@
+/* Design tokens for FALL. Single source of truth for color, spacing, type,
+   glow, and motion so every component pulls from the same cosmic palette. */
+:root {
+  /* background */
+  --color-void: #030408;
+  --color-bg: #05070c;
+  --color-bg-elevated: #0b0f18;
+
+  /* text */
+  --color-text: #eef2f7;
+  --color-text-dim: #9aa7ba;
+  --color-text-faint: #5b6577;
+
+  /* accent: the infalling astronaut, "YOU" */
+  --color-you: #4fd1ff;
+  --color-you-strong: #a6ecff;
+  --color-you-dim: rgb(79 209 255 / 35%);
+
+  /* accent: the distant observer, "EARTH" */
+  --color-earth: #ff7a45;
+  --color-earth-strong: #ffbd97;
+  --color-earth-dim: rgb(255 122 69 / 35%);
+
+  /* status */
+  --color-danger: #ff4d4d;
+  --color-warning: #ffb020;
+
+  /* glass surfaces */
+  --surface-glass-bg: rgb(10 14 23 / 55%);
+  --surface-glass-border: rgb(255 255 255 / 12%);
+  --surface-glass-blur: 16px;
+
+  /* borders */
+  --border-hairline: 1px solid rgb(255 255 255 / 14%);
+
+  /* glow */
+  --glow-you: 0 0 24px rgb(79 209 255 / 45%);
+  --glow-earth: 0 0 24px rgb(255 122 69 / 45%);
+  --glow-soft: 0 0 40px rgb(255 255 255 / 6%);
+
+  /* spacing scale */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+
+  /* type: system stack only -- no webfont fetch, so the hero paints on a
+     slow connection without waiting on network */
+  --font-display: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", menlo, consolas, monospace;
+
+  /* type scale */
+  --text-hero: clamp(2.75rem, 9vw, 6.5rem);
+  --text-h2: clamp(1.5rem, 4vw, 2.25rem);
+  --text-body: 1rem;
+  --text-small: 0.8125rem;
+  --text-label: 0.6875rem;
+
+  /* radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+
+  /* layering */
+  --z-bg: 0;
+  --z-scene: 10;
+  --z-atmosphere: 15;
+  --z-hud: 20;
+  --z-overlay: 30;
+
+  /* motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-medium: 400ms;
+  --duration-slow: 900ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-medium: 0ms;
+    --duration-slow: 0ms;
+  }
+}
