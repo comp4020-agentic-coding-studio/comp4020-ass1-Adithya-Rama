@@ -163,13 +163,24 @@ says about the developer you're becoming.
 
 ## Project
 
-Assignment 1: an interactive explainer of something more people should
-understand. One strong idea, one dataset or mechanic, and nothing else.
+**FALL --- One Journey. Two Realities.** An interactive explainer of
+gravitational time dilation: an infalling astronaut and a distant Earth
+observer share one event and never agree on how long it took. The agreed
+blueprint (file structure, state machine, asset mapping, physics
+approximations) is the standing plan --- treat it as settled, not as a
+proposal to re-litigate mid-build.
 
 ## Scope
 
 Static, client-side prototype only. Do not add auth, a backend, a database,
 payments, or any API integrations.
+
+This project explains **one idea**: gravitational time and observation
+diverge around a black hole. Tidal forces, signal delay, and horizon crossing
+exist to support that one idea from different angles --- they are not
+separate topics in their own right. Do not turn this into a general
+black-hole encyclopedia. If a feature doesn't make the central divergence
+more legible, it doesn't belong, however interesting it is on its own.
 
 ## Technology
 
@@ -185,3 +196,133 @@ Prefer Astro + CSS + semantic HTML. Use minimal JS.
 6. imagery
 7. colour
 8. micro-details
+
+## Core interaction invariant
+
+The visitor must be able to, in one continuous session:
+
+- choose a black hole
+- synchronise clocks
+- begin the fall
+- alter or progress their descent
+- observe divergence between the infalling and distant-observer perspectives
+- send at least one signal to Earth
+- cross the event horizon
+- receive an ending/result based on the black hole they chose
+
+If a build doesn't let a visitor do all eight in order, it isn't done, no
+matter how good any individual screen looks in isolation.
+
+## Interaction quality
+
+Every user-facing control must cause an immediate, visible state change. If
+pressing a control doesn't change what's on screen within the same frame or
+two, the control is broken, not just unpolished.
+
+No primary educational idea may depend on the visitor reading a paragraph.
+The interaction --- what visibly changes when they act --- has to carry the
+explanation. Caption text may support what they're seeing; it may never be
+the only place the idea lives.
+
+## Visual quality
+
+`assets/ref_images/` is canonical. It is not moodboard inspiration to riff on
+--- it is the target. When a screen doesn't match its reference, the
+reference is right and the screen is wrong.
+
+The site must feel cinematic, immersive, and spatial. Concretely, that rules
+out:
+
+- SaaS-style cards
+- dashboard-heavy layouts
+- white backgrounds
+- conventional navbar structures
+- large blocks of explanatory text
+
+UI overlays (stat panels, controls, readouts) may exist over the scene, but
+the black hole and space scene must stay visually dominant --- overlays are a
+layer on top of the experience, not the experience itself.
+
+## Responsive invariant
+
+The core experience must work with no horizontal scroll at both a narrow
+mobile viewport and the standard desktop marking viewport (see the checks
+list above: 1920×1080 and 390×844).
+
+Resizing mid-interaction must never reset simulation state. The clocks,
+velocity, and distance-to-horizon a visitor has already reached survive a
+resize; only the layout may change.
+
+## Keyboard invariant
+
+Every one of the eight core-interaction steps above must be completable with
+a keyboard alone. Never gate a step behind a hover-only affordance. Every
+interactive element needs a visible focus state --- if you can't see where
+focus is by looking at the screen, it doesn't count as accessible.
+
+## Motion invariant
+
+Animation exists to communicate a change of state, not to decorate. If an
+animation doesn't tell the visitor something changed (position, time,
+signal strength, danger), cut it.
+
+Respect `prefers-reduced-motion`: anything that isn't essential to
+understanding the current state must be disabled, or reduced to an instant
+change, when the visitor has asked for reduced motion.
+
+## Determinism
+
+Any pseudo-random visual behaviour (starfield jitter, particle drift, and
+the like) must be seeded/deterministic, not `Math.random()` called fresh on
+every render. Tests and a marker's repeat viewing both depend on the same
+input producing the same output.
+
+## Performance
+
+- No autoplay video anywhere in the experience.
+- No large dependency for something a small hand-written function can do (a
+  charting library for two line charts, an animation library for opacity
+  cross-fades, etc.).
+- Images load lazily where they aren't needed for the first paint.
+- The first screen (the hero) must be usable on a slow connection: it should
+  render and become interactive before every later-scene asset has finished
+  loading.
+
+## Scientific honesty
+
+This is a conceptual visualisation, not a numerical general-relativity
+solver. The physics functions are simplified closed-form approximations, not
+geodesic integration --- that's a deliberate, documented choice, not a
+shortcut to hide.
+
+Never imply precision the model doesn't have. Where a displayed value is
+illustrative rather than a real computed quantity, label it as such, so a
+visitor can't mistake dramatic license for a rigorous result.
+
+## Acceptance rule
+
+Do not accept a visual or interaction implementation merely because it
+renders. Before calling any stage finished, verify all six of:
+
+- desktop viewport
+- mobile viewport
+- keyboard-only operation
+- resize mid-state (state survives, layout adapts)
+- `prefers-reduced-motion` respected
+- no console errors
+
+A stage that renders but fails any one of these six is not finished --- it's
+untested.
+
+## Harness notes
+
+- `spec/assignment-1.test.ts` must test the eight-step core interaction
+  invariant above, not a generic placeholder contract --- update it the
+  moment the real markup exists, and don't leave the starter's
+  `data-testid="interaction"` convention standing in for the real one.
+- Ship optimised (resized, WebP) copies of the imagery in `assets/prod/`
+  from `src/assets/img/` or `public/img/` --- never import the originals
+  directly; they're multi-megabyte source renders, not shippable assets.
+- `assets/ref_images/` and the originals in `assets/prod/` are reference
+  material, not part of the deployed site --- don't let them get pulled into
+  `dist/` by accident.
