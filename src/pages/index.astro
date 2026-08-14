@@ -207,13 +207,22 @@ const supermassiveStats = [
             </div>
 
             <div class="fall-side fall-side-earth">
-              <img
-                class="fall-astronaut"
-                src={withBase("img/astronaut-reach-cool.webp")}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-              />
+              <div class="fall-astronaut-stack">
+                <img
+                  class="fall-astronaut fall-astronaut-cool"
+                  src={withBase("img/astronaut-reach-cool.webp")}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
+                <img
+                  class="fall-astronaut fall-astronaut-warm"
+                  src={withBase("img/astronaut-reach-warm.webp")}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
+              </div>
               <span class="sync-label">Earth observer</span>
               <span class="fall-clock" id="fall-clock-earth">00:00:00</span>
               <p class="fall-readout" id="fall-readout-earth">Signal: strong</p>
@@ -221,6 +230,27 @@ const supermassiveStats = [
           </div>
 
           <p class="fall-caption" id="fall-caption">Redshift ×1.0 · Tidal stress: mild</p>
+
+          <div class="horizon-banner" id="horizon-banner" aria-hidden="true">
+            <p class="horizon-banner-title">Event Horizon</p>
+            <p class="horizon-banner-subtitle">Point of no return</p>
+          </div>
+
+          <div class="horizon-crossed-panel" id="horizon-crossed-panel" aria-hidden="true" inert>
+            <img
+              class="horizon-crossed-bg"
+              src={withBase("img/blackhole-split-astronaut.webp")}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+            <h3 class="horizon-crossed-heading" id="horizon-crossed-heading">Horizon crossed</h3>
+            <p class="horizon-you-copy">
+              Nothing happened. Your clock continues. No giant explosion. No wall. No magical
+              portal.
+            </p>
+            <p class="horizon-earth-copy">You can no longer send a signal back.</p>
+          </div>
 
           <ol class="fall-timeline" aria-label="Fall stage">
             <li class="fall-timeline-step is-active" data-stage="approach" aria-current="step">
@@ -654,14 +684,130 @@ const supermassiveStats = [
     transition: transform var(--duration-medium) var(--ease-standard);
   }
 
-  .fall-astronaut {
+  .fall-astronaut-stack {
+    position: relative;
     width: 6rem;
+  }
+
+  .fall-astronaut {
+    position: absolute;
+    inset: 0;
+    width: 100%;
     border-radius: var(--radius-md);
     opacity: var(--fall-brightness, 1);
     filter: sepia(var(--fall-warmth, 0)) blur(var(--fall-motion-blur, 0px));
     transition:
       opacity var(--duration-medium) var(--ease-standard),
       filter var(--duration-medium) var(--ease-standard);
+  }
+
+  /* the warm-lit astronaut is invisible until horizon crossing begins -- it
+     ignores --fall-brightness entirely and is driven purely by the
+     data-horizon states below, so it never competes with the ordinary
+     descent-brightness fade on the cool image above it. */
+  .fall-astronaut-warm {
+    opacity: 0;
+  }
+
+  /* Crossing is a scripted, discrete event (see beginCrossing/finishCrossing
+     in experience.ts) rather than a continued function of `progress` --
+     fall-sim.ts's formulas diverge at progress = 1, so "at the horizon" and
+     "beyond it" are their own attribute states, not further points on the
+     existing curves. The astronaut fades in two steps (crossing -> crossed)
+     rather than vanishing outright, per "fades rather than remaining
+     perfectly visible forever". */
+  .experience[data-horizon="crossing"] .fall-astronaut-cool,
+  .experience[data-horizon="crossed"] .fall-astronaut-cool {
+    opacity: 0;
+  }
+
+  .experience[data-horizon="crossing"] .fall-astronaut-warm {
+    opacity: 0.55;
+  }
+
+  .experience[data-horizon="crossed"] .fall-astronaut-warm {
+    opacity: 0.1;
+  }
+
+  .horizon-banner {
+    text-align: center;
+    opacity: 0;
+    transition: opacity var(--duration-medium) var(--ease-standard);
+  }
+
+  .experience[data-horizon="approaching"] .horizon-banner {
+    opacity: 1;
+  }
+
+  .horizon-banner-title {
+    margin: 0;
+    font-size: var(--text-h2);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-earth-strong, var(--color-earth));
+    text-shadow: var(--glow-earth);
+  }
+
+  .horizon-banner-subtitle {
+    margin: var(--space-2xs) 0 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  /* the crossed panel stays out of the accessibility tree (aria-hidden +
+     inert) until finishCrossing() reveals it -- opacity alone would leave a
+     screen reader free to announce "you can no longer send a signal back"
+     before that's actually true. */
+  .horizon-crossed-panel {
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-align: center;
+    opacity: 0;
+    transition: opacity var(--duration-medium) var(--ease-standard);
+  }
+
+  .experience[data-horizon="crossed"] .horizon-crossed-panel {
+    opacity: 1;
+  }
+
+  .horizon-crossed-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.18;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .horizon-crossed-heading {
+    margin: 0;
+    font-size: var(--text-h2);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .horizon-you-copy {
+    margin: var(--space-sm) 0 0;
+    font-size: var(--text-small);
+    color: var(--color-text-dim);
+    line-height: 1.7;
+  }
+
+  .horizon-earth-copy {
+    margin: var(--space-xs) 0 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-earth-strong, var(--color-earth));
   }
 
   .fall-caption {
@@ -997,7 +1143,7 @@ const supermassiveStats = [
       width: 3.5rem;
     }
 
-    .fall-astronaut {
+    .fall-astronaut-stack {
       width: 4.5rem;
     }
 

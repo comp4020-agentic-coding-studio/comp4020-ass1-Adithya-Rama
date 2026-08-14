@@ -110,8 +110,12 @@ export function initExperience(): void {
   // viewport resize can never disturb it.
   const HORIZON_ZONE_START = 0.7;
   const DESCEND_RATE_PER_SECOND = 0.1;
+  const EVENT_HORIZON_APPROACH_PROGRESS = 0.8;
+  const CROSSING_DURATION_MS = 3200;
+  const CROSSING_DURATION_MS_REDUCED = 500;
 
   const descendControl = root.querySelector<HTMLButtonElement>("#descend-control");
+  const fallHint = root.querySelector<HTMLElement>("#fall-hint");
   const fallStatus = root.querySelector<HTMLElement>("#fall-status");
   const fallClockYou = root.querySelector<HTMLElement>("#fall-clock-you");
   const fallClockEarth = root.querySelector<HTMLElement>("#fall-clock-earth");
@@ -119,6 +123,32 @@ export function initExperience(): void {
   const fallReadoutEarth = root.querySelector<HTMLElement>("#fall-readout-earth");
   const fallCaption = root.querySelector<HTMLElement>("#fall-caption");
   const timelineSteps = root.querySelectorAll<HTMLElement>(".fall-timeline-step");
+  const horizonBanner = root.querySelector<HTMLElement>("#horizon-banner");
+  const horizonCrossedPanel = root.querySelector<HTMLElement>("#horizon-crossed-panel");
+  const horizonCrossedHeading = root.querySelector<HTMLElement>("#horizon-crossed-heading");
+  const fallAstronautCool = root.querySelector<HTMLElement>(".fall-astronaut-cool");
+  const fallAstronautWarm = root.querySelector<HTMLElement>(".fall-astronaut-warm");
+
+  // Elements whose transition duration is stretched to the cinematic crossing
+  // length (or shortened under reduced motion) for the crossing sequence,
+  // then released back to their normal stylesheet duration once
+  // finishCrossing() lands -- see beginCrossing().
+  const cinematicTargets = [fallAstronautCool, fallAstronautWarm, horizonBanner].filter(
+    (el): el is HTMLElement => el !== null,
+  );
+
+  let crossing = false;
+  let crossed = false;
+  let youClockSeconds = 0;
+  let youClockIntervalId: ReturnType<typeof setInterval> | undefined;
+
+  function startYouClockTicking(): void {
+    if (youClockIntervalId !== undefined) return;
+    youClockIntervalId = setInterval(() => {
+      youClockSeconds += 1;
+      if (fallClockYou) fallClockYou.textContent = formatClock(youClockSeconds);
+    }, 1000);
+  }
 
   function renderFall(progress: number): void {
     if (!root) return;
@@ -142,6 +172,8 @@ export function initExperience(): void {
     root.style.setProperty("--fall-brightness", String(metrics.observerBrightness));
     root.style.setProperty("--fall-motion-blur", `${(metrics.apparentVelocity * 2).toFixed(2)}px`);
 
+    youClockSeconds = metrics.properTimeSeconds;
+
     const stage = metrics.progress >= HORIZON_ZONE_START ? "horizon" : "approach";
     timelineSteps.forEach((step) => {
       const isActive = step.dataset.stage === stage;
@@ -155,9 +187,26 @@ export function initExperience(): void {
       }
     });
 
-    if (descendControl && metrics.progress >= MAX_FALL_PROGRESS) {
-      descendControl.disabled = true;
-      descendControl.textContent = "At the threshold";
+    // "A subtle countdown or approach threshold": a one-time announcement and
+    // banner reveal the moment progress crosses into the horizon-approach
+    // zone, rather than a literal ticking number.
+    if (!crossed && !crossing) {
+      if (metrics.progress >= EVENT_HORIZON_APPROACH_PROGRESS) {
+        if (root.dataset.horizon !== "approaching") {
+          root.dataset.horizon = "approaching";
+          if (fallStatus) fallStatus.textContent = "Approaching the event horizon. Point of no return.";
+        }
+      } else if (root.dataset.horizon === "approaching") {
+        delete root.dataset.horizon;
+      }
+    }
+
+    if (descendControl && metrics.progress >= MAX_FALL_PROGRESS && !crossed && !crossing) {
+      descendControl.disabled = false;
+      descendControl.textContent = "Cross the event horizon";
+      if (fallHint) {
+        fallHint.textContent = "This is the point of no return. Press to cross the event horizon.";
+      }
     }
   }
 
@@ -217,6 +266,72 @@ export function initExperience(): void {
   window.addEventListener("keyup", (event) => {
     if (event.code !== "ArrowDown" && event.code !== "KeyS") return;
     stopHold();
+  });
+
+  // Crossing is a scripted, discrete event, not a continued function of
+  // `progress` -- fall-sim.ts's formulas diverge as progress -> 1, so there
+  // is no "progress = 1" to render. On the YOU side, deliberately nothing
+  // changes beyond what was already true at the threshold: no new explosion,
+  // wall, or portal, and the proper-time clock simply keeps ticking. On the
+  // Earth side, the view intensifies to its dim, heavily redshifted,
+  // signal-lost end state and freezes there -- "almost frozen", not gone.
+  function beginCrossing(): void {
+    if (!root) return;
+    if (crossed || crossing) return;
+    crossing = true;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = prefersReducedMotion ? CROSSING_DURATION_MS_REDUCED : CROSSING_DURATION_MS;
+    cinematicTargets.forEach((el) => {
+      el.style.transitionDuration = `${duration}ms`;
+    });
+
+    root.dataset.horizon = "crossing";
+    if (descendControl) {
+      descendControl.disabled = true;
+      descendControl.textContent = "Crossing…";
+    }
+    if (sendSignalButton) sendSignalButton.disabled = true;
+    if (fallReadoutEarth) fallReadoutEarth.textContent = "Signal: lost";
+    root.style.setProperty("--fall-brightness", "0.05");
+    root.style.setProperty("--fall-warmth", "1");
+    root.style.setProperty("--fall-motion-blur", "2.5px");
+    if (fallStatus) fallStatus.textContent = "Crossing the event horizon.";
+
+    setTimeout(finishCrossing, duration);
+  }
+
+  function finishCrossing(): void {
+    if (!root) return;
+    crossing = false;
+    crossed = true;
+    root.dataset.horizon = "crossed";
+    cinematicTargets.forEach((el) => {
+      el.style.transitionDuration = "";
+    });
+    if (descendControl) {
+      descendControl.disabled = true;
+      descendControl.textContent = "Beyond the horizon";
+    }
+    if (fallStatus) fallStatus.textContent = "Horizon crossed.";
+    if (horizonCrossedPanel) {
+      horizonCrossedPanel.removeAttribute("inert");
+      horizonCrossedPanel.setAttribute("aria-hidden", "false");
+    }
+    startYouClockTicking();
+    if (horizonCrossedHeading) {
+      horizonCrossedHeading.setAttribute("tabindex", "-1");
+      horizonCrossedHeading.focus();
+    }
+  }
+
+  // A plain click (or Enter/Space via native button semantics), not a hold --
+  // crossing is a deliberate one-shot action, distinct from the hold-to-fall
+  // gesture above. startHold()'s own cap guard already makes any lingering
+  // pointerdown/keydown hold attempt at this point a no-op.
+  descendControl?.addEventListener("click", () => {
+    if (getFallProgress() >= MAX_FALL_PROGRESS && !crossed && !crossing) {
+      beginCrossing();
+    }
   });
 
   beginDescentButton?.addEventListener("click", () => {
