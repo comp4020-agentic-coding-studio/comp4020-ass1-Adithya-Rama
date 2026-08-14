@@ -41,9 +41,9 @@ export function initExperience(): void {
   const startDescentButton = root.querySelector<HTMLButtonElement>("#start-descent");
   const descentSummary = root.querySelector<HTMLElement>("#descent-summary");
 
-  const descentCopy: Record<BlackHoleType, string> = {
-    stellar: "Falling toward the stellar black hole. Tidal forces here are extreme.",
-    supermassive: "Falling toward the supermassive black hole. Tidal forces here are much milder.",
+  const choiceCopy: Record<BlackHoleType, string> = {
+    stellar: "You have chosen the stellar black hole. Tidal forces here are extreme.",
+    supermassive: "You have chosen the supermassive black hole. Tidal forces here are much milder.",
   };
 
   blackHoleInputs.forEach((input) => {
@@ -58,10 +58,30 @@ export function initExperience(): void {
   startDescentButton?.addEventListener("click", () => {
     const choice = getBlackHole();
     if (descentSummary && choice) {
-      descentSummary.textContent = descentCopy[choice];
+      descentSummary.textContent = choiceCopy[choice];
     }
-    showScene("descending");
+    showScene("syncing");
   });
+
+  // -- clock synchronisation: both clocks snap to the same value on demand.
+  // No ticking, no divergence here -- that only starts once descent begins.
+  const syncStage = root.querySelector<HTMLElement>(".sync-stage");
+  const syncButton = root.querySelector<HTMLButtonElement>("#sync-clocks");
+  const beginDescentButton = root.querySelector<HTMLButtonElement>("#begin-descent");
+  const syncStatus = root.querySelector<HTMLElement>("#sync-status");
+  const clockYou = root.querySelector<HTMLElement>("#clock-you");
+  const clockEarth = root.querySelector<HTMLElement>("#clock-earth");
+
+  syncButton?.addEventListener("click", () => {
+    if (clockYou) clockYou.textContent = "00:00:00";
+    if (clockEarth) clockEarth.textContent = "00:00:00";
+    syncStage?.classList.add("synced");
+    if (syncStatus) syncStatus.textContent = "Both clocks synchronised at 00:00:00.";
+    syncButton.hidden = true;
+    if (beginDescentButton) beginDescentButton.hidden = false;
+  });
+
+  beginDescentButton?.addEventListener("click", () => showScene("falling"));
 }
 
 initExperience();

@@ -115,9 +115,58 @@ const supermassiveStats = [
           </div>
         </section>
 
-        <section class="scene scene-descending" aria-hidden="true" inert>
-          <h2>Descent initiated</h2>
+        <section class="scene scene-syncing" aria-hidden="true" inert>
+          <h2>Synchronise your clocks</h2>
           <p class="scene-selecting-meta" id="descent-summary"></p>
+
+          <div class="sync-stage">
+            <div class="sync-side sync-side-you">
+              <img
+                class="sync-astronaut-arm"
+                src={withBase("img/astronaut-glove.webp")}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+              />
+              <span class="sync-label">You</span>
+              <span class="sync-clock" id="clock-you">--:--:--</span>
+            </div>
+
+            <div class="sync-connector" aria-hidden="true">
+              <span class="sync-connector-line"></span>
+              <span class="sync-connector-pulse"></span>
+            </div>
+
+            <div class="sync-side sync-side-earth">
+              <span class="sync-label">Earth observer</span>
+              <span class="sync-clock" id="clock-earth">--:--:--</span>
+            </div>
+          </div>
+
+          <p class="visually-hidden" aria-live="polite" id="sync-status"></p>
+
+          <div class="hero-cta">
+            <button type="button" class="btn btn-primary" id="sync-clocks" data-testid="sync-clocks">
+              Sync clocks
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="begin-descent"
+              data-testid="begin-descent"
+              hidden
+            >
+              Begin descent
+            </button>
+          </div>
+        </section>
+
+        <section class="scene scene-falling" aria-hidden="true" inert>
+          <h2>The fall begins</h2>
+          <p class="scene-selecting-meta">
+            Both clocks agreed. What happens to them next is where you and Earth stop
+            agreeing -- that divergence is the next stage of this experience.
+          </p>
         </section>
       </main>
     </div>
@@ -195,8 +244,8 @@ const supermassiveStats = [
   }
 
   /* the duality labels sit at vertical center, which is exactly where the
-     selecting/descending scenes place their own content -- fade them out
-     once we've moved past the hero rather than let them collide. */
+     later scenes place their own content -- fade them out once we've moved
+     past the hero rather than let them collide. */
   .experience:not([data-scene="hero"]) .duality-labels {
     opacity: 0;
   }
@@ -226,7 +275,8 @@ const supermassiveStats = [
 
   .experience[data-scene="hero"] .scene-hero,
   .experience[data-scene="selecting"] .scene-selecting,
-  .experience[data-scene="descending"] .scene-descending {
+  .experience[data-scene="syncing"] .scene-syncing,
+  .experience[data-scene="falling"] .scene-falling {
     opacity: 1;
     pointer-events: auto;
   }
@@ -306,6 +356,95 @@ const supermassiveStats = [
     font-size: var(--text-small);
   }
 
+  .sync-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xl);
+    width: 100%;
+    max-width: 48rem;
+  }
+
+  .sync-side {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2xs);
+  }
+
+  .sync-label {
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+  }
+
+  .sync-side-you .sync-label {
+    color: var(--color-you);
+  }
+
+  .sync-side-earth .sync-label {
+    color: var(--color-earth);
+  }
+
+  .sync-clock {
+    font-family: var(--font-mono);
+    font-size: var(--text-h2);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+  }
+
+  .sync-stage.synced .sync-clock {
+    animation: clock-snap 0.6s var(--ease-standard);
+  }
+
+  .sync-astronaut-arm {
+    position: absolute;
+    bottom: -2.5rem;
+    width: 6rem;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .sync-connector {
+    position: relative;
+    flex: 0 0 auto;
+    width: 5rem;
+    height: 2px;
+  }
+
+  .sync-connector-line {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, var(--color-you-dim), var(--color-earth-dim));
+    opacity: 0.4;
+    transition: opacity var(--duration-medium) var(--ease-standard);
+  }
+
+  .sync-stage.synced .sync-connector-line {
+    opacity: 1;
+  }
+
+  .sync-connector-pulse {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--color-text);
+    box-shadow: var(--glow-soft);
+    opacity: 0;
+  }
+
+  .sync-stage.synced .sync-connector-pulse {
+    animation: connector-pulse 0.9s var(--ease-standard);
+  }
+
   @keyframes hero-drift {
     from {
       transform: scale(1.04) translate(0, 0);
@@ -372,6 +511,47 @@ const supermassiveStats = [
     }
   }
 
+  @keyframes clock-snap {
+    0% {
+      transform: scale(1);
+      text-shadow: none;
+    }
+
+    40% {
+      transform: scale(1.15);
+      text-shadow: var(--glow-soft);
+    }
+
+    100% {
+      transform: scale(1);
+      text-shadow: none;
+    }
+  }
+
+  @keyframes connector-pulse {
+    0% {
+      left: 0;
+      opacity: 1;
+    }
+
+    100% {
+      left: calc(100% - 10px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes connector-pulse-vertical {
+    0% {
+      top: 0;
+      opacity: 1;
+    }
+
+    100% {
+      top: calc(100% - 10px);
+      opacity: 0;
+    }
+  }
+
   @media (max-width: 40rem) {
     .layer-hud {
       padding: var(--space-lg) var(--space-sm) var(--space-lg);
@@ -397,6 +577,36 @@ const supermassiveStats = [
       align-items: center;
       gap: var(--space-md);
     }
+
+    .sync-stage {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .sync-astronaut-arm {
+      bottom: -1.5rem;
+      width: 4rem;
+    }
+
+    .sync-connector {
+      width: 2px;
+      height: 3rem;
+    }
+
+    .sync-connector-line {
+      background: linear-gradient(to bottom, var(--color-you-dim), var(--color-earth-dim));
+    }
+
+    .sync-connector-pulse {
+      top: 0;
+      left: 50%;
+      margin-top: 0;
+      margin-left: -5px;
+    }
+
+    .sync-stage.synced .sync-connector-pulse {
+      animation-name: connector-pulse-vertical;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -405,7 +615,9 @@ const supermassiveStats = [
     .layer-atmosphere,
     .hero-title,
     .split-line,
-    .btn-pulse {
+    .btn-pulse,
+    .sync-clock,
+    .sync-connector-pulse {
       animation: none;
     }
 
