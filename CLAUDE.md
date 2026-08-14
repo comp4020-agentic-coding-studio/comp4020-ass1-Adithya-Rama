@@ -160,3 +160,28 @@ catching you out, a fact about the stack the agent keeps getting wrong --- write
 it down here. Growing this file is the work of harness engineering, and the gap
 between this boilerplate and your own version is part of what your prototype
 says about the developer you're becoming.
+
+## Project
+
+Assignment 1: an interactive explainer of something more people should
+understand. One strong idea, one dataset or mechanic, and nothing else.
+
+## Scope
+
+Static, client-side prototype only. Do not add auth, a backend, a database,
+payments, or any API integrations.
+
+## Technology
+
+Prefer Astro + CSS + semantic HTML. Use minimal JS.
+
+## Quality priority
+
+1. composition
+2. proportions
+3. hierarchy
+4. spacing
+5. typography
+6. imagery
+7. colour
+8. micro-details
