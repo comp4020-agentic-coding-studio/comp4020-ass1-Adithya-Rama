@@ -4,7 +4,17 @@
 // tiny: this is the first client-side JS in the project (see CLAUDE.md,
 // "prefer the simplest architecture that satisfies the contract").
 import { getBlackHole, setBlackHole, getFallProgress, setFallProgress, type BlackHoleType } from "../lib/state";
-import { computeFallMetrics, formatClock, describeSignal, describeTidalStress, MAX_FALL_PROGRESS } from "../lib/fall-sim";
+import {
+  computeFallMetrics,
+  formatClock,
+  describeSignal,
+  describeTidalStress,
+  describeLatency,
+  describeRedshiftSeverity,
+  describeMessageOutcome,
+  computeSignalTravelMs,
+  MAX_FALL_PROGRESS,
+} from "../lib/fall-sim";
 
 export function initExperience(): void {
   const root = document.querySelector<HTMLElement>('[data-testid="interaction-output"]');
@@ -200,6 +210,82 @@ export function initExperience(): void {
     renderFall(getFallProgress());
     showScene("falling");
   });
+
+  // -- the "I'm OK" signal experiment: a pulse sent from YOU that Earth
+  // receives later, weaker and redder the deeper it was sent from. Its
+  // properties are fixed at the moment of sending, not recomputed mid-flight,
+  // so descending further while a pulse travels doesn't retroactively change
+  // it -- the pulse already left that shell of spacetime.
+  const sendSignalButton = root.querySelector<HTMLButtonElement>("#send-signal");
+  const signalStatus = root.querySelector<HTMLElement>("#signal-status");
+  const signalPulse = root.querySelector<HTMLElement>("#signal-pulse");
+  const signalOutgoing = root.querySelector<HTMLElement>("#signal-outgoing");
+  const signalLatency = root.querySelector<HTMLElement>("#signal-latency");
+  const signalObserved = root.querySelector<HTMLElement>("#signal-observed");
+  const signalRedshift = root.querySelector<HTMLElement>("#signal-redshift");
+  const signalReceived = root.querySelector<HTMLElement>("#signal-received");
+
+  let signalSending = false;
+  let signalTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  function sendSignal(): void {
+    // Belt-and-suspenders against spam-clicking: the button is disabled for
+    // the whole trip, but a stray event (or a test firing clicks faster than
+    // the DOM updates) must never be allowed to start a second timer.
+    if (signalSending) return;
+    signalSending = true;
+    if (signalTimeoutId !== undefined) {
+      clearTimeout(signalTimeoutId);
+      signalTimeoutId = undefined;
+    }
+
+    const progress = getFallProgress();
+    const metrics = computeFallMetrics(progress, getBlackHole());
+    const travelMs = computeSignalTravelMs(progress);
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (sendSignalButton) {
+      sendSignalButton.disabled = true;
+      sendSignalButton.textContent = "Sending…";
+    }
+    if (signalOutgoing) signalOutgoing.textContent = "Sending";
+    if (signalLatency) signalLatency.textContent = describeLatency(progress);
+    if (signalRedshift) signalRedshift.textContent = describeRedshiftSeverity(metrics.redshiftFactor);
+    if (signalObserved) signalObserved.textContent = "In transit";
+    if (signalReceived) signalReceived.textContent = "—";
+    if (signalStatus) signalStatus.textContent = "Signal sent toward Earth.";
+
+    if (signalPulse) {
+      signalPulse.style.transitionDuration = prefersReducedMotion ? "1ms" : `${travelMs}ms`;
+      signalPulse.style.setProperty("--signal-stretch", (1 + metrics.redshiftFactor * 0.6).toFixed(2));
+      signalPulse.style.setProperty(
+        "--signal-arrival-opacity",
+        Math.max(0.15, metrics.signalStrength).toFixed(2),
+      );
+      signalPulse.classList.remove("is-arriving");
+      // force a reflow so the browser commits the reset "at YOU" state
+      // before the "is-arriving" class kicks off the transition to Earth.
+      void signalPulse.offsetWidth;
+      signalPulse.classList.add("is-armed", "is-arriving");
+    }
+
+    signalTimeoutId = setTimeout(() => {
+      signalTimeoutId = undefined;
+      signalSending = false;
+      const outcome = describeMessageOutcome(metrics.signalStrength);
+      if (signalOutgoing) signalOutgoing.textContent = "Sent";
+      if (signalObserved) signalObserved.textContent = describeSignal(metrics.signalStrength);
+      if (signalReceived) signalReceived.textContent = outcome;
+      if (signalStatus) signalStatus.textContent = `Earth side: ${outcome.toLowerCase()}.`;
+      if (sendSignalButton) {
+        sendSignalButton.disabled = false;
+        sendSignalButton.textContent = "Send: I'm OK";
+      }
+      signalPulse?.classList.remove("is-armed", "is-arriving");
+    }, travelMs);
+  }
+
+  sendSignalButton?.addEventListener("click", sendSignal);
 }
 
 initExperience();

@@ -69,3 +69,38 @@ export function describeTidalStress(stress: number): string {
   if (stress < 0.8) return "severe";
   return "extreme";
 }
+
+// The "I'm OK" signal experiment reuses `progress`/`FallMetrics` rather than
+// inventing a parallel model -- a signal fired "now" simply inherits the
+// emission-time values below, fixed for its whole trip. None of this claims
+// real units (light-travel time, dB, etc.), so callers surface these as
+// categorical labels, never as numbers that would look measured.
+export function describeLatency(progress: number): string {
+  const ratio = Math.min(Math.max(progress, 0), MAX_FALL_PROGRESS) / MAX_FALL_PROGRESS;
+  if (ratio < 0.25) return "LOW DELAY";
+  if (ratio < 0.55) return "DELAY RISING";
+  if (ratio < 0.8) return "HIGH DELAY";
+  return "EXTREME DELAY";
+}
+
+export function describeRedshiftSeverity(redshiftFactor: number): string {
+  if (redshiftFactor < 1.3) return "CLEAR SIGNAL";
+  if (redshiftFactor < 2) return "REDSHIFTED";
+  if (redshiftFactor < 4) return "HEAVILY REDSHIFTED";
+  return "EXTREME REDSHIFT";
+}
+
+export function describeMessageOutcome(signalStrength: number): string {
+  if (signalStrength > 0.66) return "MESSAGE RECEIVED";
+  if (signalStrength > 0.33) return "MESSAGE DEGRADED";
+  if (signalStrength > 0.1) return "BARELY DETECTABLE";
+  return "NEARLY UNDETECTABLE";
+}
+
+// Illustrative animation timing only -- never displayed as a number. Rises
+// with progress so the pulse visibly takes longer to cross as the horizon
+// nears, without claiming to be a real light-travel-time calculation.
+export function computeSignalTravelMs(progress: number): number {
+  const ratio = Math.min(Math.max(progress, 0), MAX_FALL_PROGRESS) / MAX_FALL_PROGRESS;
+  return Math.round(700 + 2600 * ratio ** 1.4);
+}
