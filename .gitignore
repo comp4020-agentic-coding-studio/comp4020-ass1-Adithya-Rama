@@ -3,6 +3,11 @@ dist/
 .astro/
 *.log
 
+# raw reference/source renders (~33MB) -- canonical for visual direction and
+# for scripts/optimize-images.mjs, but local-only; the shippable derivatives
+# it produces live in public/img/ and are committed.
+assets/
+
 # editor and OS junk
 .DS_Store
 ._*
