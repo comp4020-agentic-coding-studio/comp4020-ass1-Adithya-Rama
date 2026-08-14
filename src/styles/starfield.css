@@ -2,6 +2,17 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  transform-origin: 50% 45%;
+  transition: transform var(--duration-slow) var(--ease-standard);
+}
+
+/* "Look back" mode: swirl the whole star canvas around the black hole's
+   on-screen position (matching .gravity-glow/.lensing-vignette's own
+   center) -- a cheap, honest stand-in for "stars curve around the black
+   hole", not a per-star ray trace. Strength follows --fall-lensing, the
+   same progress-driven value used everywhere else in the descent. */
+.experience[data-scene="falling"][data-lookback="true"] .starfield {
+  transform: rotate(calc(var(--fall-lensing, 0) * 35deg)) scale(calc(1 + var(--fall-lensing, 0) * 0.25));
 }
 
 .starfield-star {

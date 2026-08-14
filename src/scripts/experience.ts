@@ -22,10 +22,23 @@ export function initExperience(): void {
   if (!root || !beginButton) return;
 
   const panels = root.querySelectorAll<HTMLElement>(".scene");
+  const lookBackToggle = root.querySelector<HTMLButtonElement>("#look-back-toggle");
+  const lookBackStateLabel = root.querySelector<HTMLElement>("#look-back-state");
+
+  function setLookBack(on: boolean): void {
+    if (!root) return;
+    root.dataset.lookback = String(on);
+    lookBackToggle?.setAttribute("aria-pressed", String(on));
+    if (lookBackStateLabel) lookBackStateLabel.textContent = on ? "On" : "Off";
+  }
 
   function showScene(scene: string): void {
     if (!root) return;
     root.dataset.scene = scene;
+    // Look-back is a view of the falling scene, not app state -- leaving it
+    // (impossible in the current forward-only flow, but cheap to guard)
+    // should never leave a future scene stuck mid-warp.
+    if (scene !== "falling") setLookBack(false);
     panels.forEach((panel) => {
       const isActive = panel.classList.contains(`scene-${scene}`);
       panel.setAttribute("aria-hidden", String(!isActive));
@@ -209,6 +222,15 @@ export function initExperience(): void {
   beginDescentButton?.addEventListener("click", () => {
     renderFall(getFallProgress());
     showScene("falling");
+  });
+
+  // -- "Look back": a viewpoint toggle, not a new scene. It flips a single
+  // attribute on the persistent .experience root; the CSS (scoped to
+  // [data-scene="falling"][data-lookback="true"]) does the rest, so turning
+  // it off is just removing the attribute -- the prior view comes back on
+  // its own, no state to restore by hand.
+  lookBackToggle?.addEventListener("click", () => {
+    setLookBack(lookBackToggle.getAttribute("aria-pressed") !== "true");
   });
 
   // -- the "I'm OK" signal experiment: a pulse sent from YOU that Earth

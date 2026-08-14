@@ -169,6 +169,24 @@ const supermassiveStats = [
             position.
           </p>
 
+          <div class="viewpoint-control">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="look-back-toggle"
+              data-testid="look-back-toggle"
+              aria-pressed="false"
+              aria-describedby="look-back-help"
+            >
+              Look back: <span id="look-back-state">Off</span>
+            </button>
+            <p class="visually-hidden" id="look-back-help">
+              Looking back shows a stylised, illustrative view of gravitational lensing toward
+              Earth. It is an educational visualisation, not a physically accurate ray-traced
+              simulation.
+            </p>
+          </div>
+
           <div class="fall-stage">
             <div class="fall-side fall-side-you">
               <img
@@ -305,6 +323,7 @@ const supermassiveStats = [
 
   .layer-atmosphere {
     animation: atmosphere-drift 90s linear infinite alternate;
+    transition: filter var(--duration-slow) var(--ease-standard);
   }
 
   .duality-labels {
@@ -403,6 +422,11 @@ const supermassiveStats = [
     margin: calc(var(--space-xs) * -1) 0 0;
     font-size: var(--text-small);
     color: var(--color-text-faint);
+  }
+
+  .viewpoint-control {
+    display: flex;
+    justify-content: center;
   }
 
   .hero-title {
@@ -561,6 +585,27 @@ const supermassiveStats = [
     transition: transform var(--duration-medium) var(--ease-standard);
   }
 
+  /* "Look back" is a viewpoint change on the persistent background layers,
+     not a new scene -- toggling data-lookback off simply drops these
+     overrides and the ordinary forward view (including hero-image's ambient
+     drift) returns on its own. Not a literal ray trace: a stylised warp
+     whose strength follows the same --fall-lensing progress driving the
+     rest of the descent (see the hidden help text next to the toggle). */
+  .experience[data-scene="falling"][data-lookback="true"] .hero-image {
+    animation: none;
+    transform: scale(calc(1 + var(--fall-lensing, 0) * 0.6))
+      translateX(calc(var(--fall-lensing, 0) * -8%));
+    filter: blur(calc(var(--fall-lensing, 0) * 2px)) saturate(calc(1 + var(--fall-lensing, 0) * 0.5));
+    transition:
+      transform var(--duration-slow) var(--ease-standard),
+      filter var(--duration-slow) var(--ease-standard);
+  }
+
+  .experience[data-scene="falling"][data-lookback="true"] .layer-atmosphere {
+    filter: hue-rotate(calc(var(--fall-lensing, 0) * -20deg))
+      contrast(calc(1 + var(--fall-lensing, 0) * 0.3));
+  }
+
   .fall-stage {
     display: flex;
     align-items: center;
@@ -676,6 +721,11 @@ const supermassiveStats = [
   }
 
   #descend-control[aria-pressed="true"] {
+    background: var(--color-you-dim);
+    box-shadow: var(--glow-you);
+  }
+
+  #look-back-toggle[aria-pressed="true"] {
     background: var(--color-you-dim);
     box-shadow: var(--glow-you);
   }
