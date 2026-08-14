@@ -3,7 +3,6 @@ import "../styles/global.css";
 import "../styles/button.css";
 import Starfield from "../components/Starfield.astro";
 import PrimaryNav from "../components/PrimaryNav.astro";
-import HudPanel from "../components/HudPanel.astro";
 import { withBase } from "../lib/base";
 ---
 
@@ -19,7 +18,7 @@ import { withBase } from "../lib/base";
     />
   </head>
   <body>
-    <div class="experience" data-scene="hero">
+    <div class="experience" data-scene="hero" data-testid="interaction-output">
       <div class="layer layer-bg"></div>
       <div class="layer layer-atmosphere">
         <Starfield />
@@ -31,26 +30,46 @@ import { withBase } from "../lib/base";
           alt="A black hole splitting starlight into a cyan stream on one side and an amber stream on the other, with Earth visible in the distance"
           fetchpriority="high"
         />
+        <div class="gravity-glow" aria-hidden="true"></div>
+        <div class="split-line" aria-hidden="true"></div>
       </div>
 
       <PrimaryNav />
 
-      <div class="layer layer-hud">
-        <header class="hero-copy">
-          <h1 class="hero-title">FALL</h1>
-          <p class="hero-tagline">One journey. Two realities.</p>
-        </header>
-
-        <main class="hero-hud">
-          <HudPanel variant="you" label="Your clock" value="00:10:24" meta="proper time" />
-          <HudPanel variant="earth" label="Earth clock" value="00:10:24" meta="coordinate time" />
-        </main>
-
-        <div class="hero-cta">
-          <a class="btn btn-primary" href={withBase("dev/styleguide")}>Begin fall →</a>
-        </div>
+      <div class="duality-labels" aria-hidden="true">
+        <span class="duality-label duality-label-you">You</span>
+        <span class="duality-label duality-label-earth">Earth observer</span>
       </div>
+
+      <main class="layer layer-hud">
+        <section class="scene scene-hero">
+          <header class="hero-copy">
+            <h1 class="hero-title">FALL</h1>
+            <p class="hero-tagline">One journey. Two realities.</p>
+            <p class="hero-narrative">
+              You and Earth synchronise your clocks.<br />
+              You fall into a black hole.<br />
+              You will never agree on what happens next.
+            </p>
+          </header>
+
+          <div class="hero-cta">
+            <button type="button" class="btn btn-primary btn-pulse" data-testid="interaction">
+              Begin fall
+            </button>
+          </div>
+        </section>
+
+        <section class="scene scene-selecting" aria-hidden="true" inert>
+          <h2>Choose your black hole</h2>
+          <p class="scene-selecting-meta">Selection continues in the next stage of the experience.</p>
+        </section>
+      </main>
     </div>
+
+    <script>
+      import "../scripts/experience";
+    </script>
   </body>
 </html>
 
@@ -62,18 +81,89 @@ import { withBase } from "../lib/base";
     height: 100%;
     object-fit: cover;
     opacity: 0.9;
+    animation: hero-drift 50s ease-in-out infinite alternate;
+  }
+
+  .gravity-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 45%, rgb(255 255 255 / 20%), transparent 35%);
+    mix-blend-mode: screen;
+    animation: glow-pulse 6s ease-in-out infinite;
+  }
+
+  .split-line {
+    position: absolute;
+    top: 10%;
+    bottom: 10%;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 35%), transparent);
+    transform: scaleY(0);
+    transform-origin: center;
+    animation: split-reveal 1.6s var(--ease-standard) 0.4s both;
+  }
+
+  .layer-atmosphere {
+    animation: atmosphere-drift 90s linear infinite alternate;
+  }
+
+  .duality-labels {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: var(--z-overlay);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--space-lg);
+    pointer-events: none;
+  }
+
+  .duality-label {
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  .duality-label-you {
+    color: var(--color-you);
+    text-shadow: 0 0 12px var(--color-you-dim);
+  }
+
+  .duality-label-earth {
+    color: var(--color-earth);
+    text-shadow: 0 0 12px var(--color-earth-dim);
   }
 
   .layer-hud {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
     padding: var(--space-2xl) var(--space-md) var(--space-xl);
     text-align: center;
   }
 
-  .hero-copy {
-    margin-top: var(--space-xl);
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+    padding: var(--space-2xl) var(--space-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-slow) var(--ease-standard);
+  }
+
+  .experience[data-scene="hero"] .scene-hero,
+  .experience[data-scene="selecting"] .scene-selecting {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .hero-title {
@@ -83,6 +173,7 @@ import { withBase } from "../lib/base";
     font-weight: 700;
     color: var(--color-text);
     text-shadow: var(--glow-soft);
+    animation: title-reveal 1.4s var(--ease-standard) both;
   }
 
   .hero-tagline {
@@ -92,15 +183,11 @@ import { withBase } from "../lib/base";
     letter-spacing: 0.04em;
   }
 
-  .hero-hud {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-  }
-
-  .hero-hud > :global(*) {
-    text-align: left;
+  .hero-narrative {
+    margin: var(--space-md) 0 0;
+    font-size: var(--text-small);
+    color: var(--color-text-faint);
+    line-height: 1.8;
   }
 
   .hero-cta {
@@ -108,13 +195,123 @@ import { withBase } from "../lib/base";
     justify-content: center;
   }
 
+  .btn-pulse {
+    animation: cta-pulse 2.4s ease-in-out infinite;
+  }
+
+  .scene-selecting h2 {
+    margin: 0;
+    font-size: var(--text-h2);
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .scene-selecting-meta {
+    margin: 0;
+    color: var(--color-text-dim);
+    font-size: var(--text-small);
+  }
+
+  @keyframes hero-drift {
+    from {
+      transform: scale(1.04) translate(0, 0);
+    }
+
+    to {
+      transform: scale(1.08) translate(-1%, -1%);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes split-reveal {
+    from {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+
+    to {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes atmosphere-drift {
+    from {
+      transform: translate(0, 0);
+    }
+
+    to {
+      transform: translate(-1%, 1%);
+    }
+  }
+
+  @keyframes title-reveal {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes cta-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 rgb(79 209 255 / 0%);
+    }
+
+    50% {
+      box-shadow: var(--glow-you);
+    }
+  }
+
   @media (max-width: 40rem) {
     .layer-hud {
       padding: var(--space-lg) var(--space-sm) var(--space-lg);
     }
 
-    .hero-hud {
-      justify-content: center;
+    .duality-labels {
+      top: var(--space-2xl);
+      transform: none;
+      padding: 0 var(--space-md);
+    }
+
+    .hero-narrative {
+      font-size: var(--text-small);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-image,
+    .gravity-glow,
+    .layer-atmosphere,
+    .hero-title,
+    .split-line,
+    .btn-pulse {
+      animation: none;
+    }
+
+    .hero-title,
+    .split-line {
+      opacity: 1;
+      transform: none;
+    }
+
+    .gravity-glow {
+      opacity: 0.7;
     }
   }
 </style>
