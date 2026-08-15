@@ -41,3 +41,29 @@ export function setCompletedRun(value: boolean): void {
 export function getCompletedRun(): boolean {
   return completedRun;
 }
+
+// Tracks which black hole types have reached the tidal-forces outcome at
+// least once, independent of which is currently selected. This is what lets
+// the experience show a stellar-vs-supermassive comparison the moment both
+// have actually been seen, without having to remember two full run
+// histories -- the comparison's content is fixed once both are true.
+const completedBlackHoles = new Set<BlackHoleType>();
+
+export function markBlackHoleCompleted(choice: BlackHoleType): void {
+  completedBlackHoles.add(choice);
+}
+
+export function hasCompletedBothBlackHoles(): boolean {
+  return completedBlackHoles.has("stellar") && completedBlackHoles.has("supermassive");
+}
+
+// "Replay experience" is a full restart, unlike "try the other black hole"
+// (which only swaps the black hole and keeps completedRun/completedBlackHoles
+// so the experience keeps remembering prior runs) -- so this is the one
+// place that clears every module-singleton back to its first-visit value.
+export function resetAllRuns(): void {
+  selectedBlackHole = null;
+  fallProgress = 0;
+  completedRun = false;
+  completedBlackHoles.clear();
+}

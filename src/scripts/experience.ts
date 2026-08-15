@@ -9,6 +9,9 @@ import {
   getFallProgress,
   setFallProgress,
   setCompletedRun,
+  markBlackHoleCompleted,
+  hasCompletedBothBlackHoles,
+  resetAllRuns,
   type BlackHoleType,
 } from "../lib/state";
 import {
@@ -150,6 +153,7 @@ export function initExperience(): void {
   const outcomeStatCrossing = root.querySelector<HTMLElement>("#outcome-stat-crossing");
   const outcomeStatus = root.querySelector<HTMLElement>("#outcome-status");
   const tryOtherBlackHoleButton = root.querySelector<HTMLButtonElement>("#try-other-blackhole");
+  const replayExperienceButton = root.querySelector<HTMLButtonElement>("#replay-experience");
 
   // Copy differs by black hole, but the "Interior fate: Unavoidable" stat in
   // the markup is identical for both -- that's the trick-question reveal
@@ -446,11 +450,12 @@ export function initExperience(): void {
       outcomeStatus.textContent = `Outcome shown for the ${blackHole} black hole: ${copy.headline}`;
     }
     setCompletedRun(true);
+    markBlackHoleCompleted(blackHole);
   }
 
   seeOutcomeButton?.addEventListener("click", () => {
     renderOutcome();
-    showScene("outcome");
+    showScene(hasCompletedBothBlackHoles() ? "comparison" : "outcome");
   });
 
   beginDescentButton?.addEventListener("click", () => {
@@ -543,22 +548,13 @@ export function initExperience(): void {
 
   sendSignalButton?.addEventListener("click", sendSignal);
 
-  // "Resets simulation while retaining that the user has already completed
-  // one run": every per-run flag and readout below returns to its initial
-  // value, but completedRun (state.ts) is deliberately left set so the
-  // selecting scene can acknowledge this isn't a first visit -- unlike
-  // blackHole/fallProgress, which a fresh run must genuinely restart from.
-  // Reroutes to "selecting" (not straight back into falling) with the other
-  // black hole pre-checked, since #repeat-run-hint lives in that scene.
-  function resetForOtherBlackHole(): void {
+  // Shared by both "try the other black hole" and "replay experience": every
+  // per-run flag, clock, and scene readout below returns to its initial
+  // value. What differs between the two callers is which black hole ends up
+  // selected and which scene the visitor lands back in -- both handle that
+  // themselves, around a call to this.
+  function resetRunUI(): void {
     if (!root) return;
-    const previous = getBlackHole();
-    const other: BlackHoleType = previous === "supermassive" ? "stellar" : "supermassive";
-
-    setCompletedRun(true);
-    setBlackHole(other);
-    setFallProgress(0);
-
     crossing = false;
     crossed = false;
     escaping = false;
@@ -574,16 +570,6 @@ export function initExperience(): void {
     cinematicTargets.forEach((el) => {
       el.style.transitionDuration = "";
     });
-
-    blackHoleInputs.forEach((input) => {
-      input.checked = input.value === other;
-    });
-    if (startDescentButton) startDescentButton.disabled = false;
-    if (descentSummary) descentSummary.textContent = "";
-    if (repeatRunHint && previous) {
-      repeatRunHint.hidden = false;
-      repeatRunHint.textContent = `You already rode the fall into the ${previous} black hole. This run starts fresh with the ${other} black hole.`;
-    }
 
     syncStage?.classList.remove("synced");
     if (syncButton) syncButton.hidden = false;
@@ -647,10 +633,63 @@ export function initExperience(): void {
     signalPulse?.classList.remove("is-armed", "is-arriving");
 
     renderFall(0);
+  }
+
+  // "Resets simulation while retaining that the user has already completed
+  // one run": completedRun/completedBlackHoles (state.ts) are deliberately
+  // left set so the selecting scene can acknowledge this isn't a first
+  // visit -- unlike blackHole/fallProgress, which a fresh run must genuinely
+  // restart from. Reroutes to "selecting" (not straight back into falling)
+  // with the other black hole pre-checked, since #repeat-run-hint lives in
+  // that scene.
+  function resetForOtherBlackHole(): void {
+    if (!root) return;
+    const previous = getBlackHole();
+    const other: BlackHoleType = previous === "supermassive" ? "stellar" : "supermassive";
+
+    setCompletedRun(true);
+    setBlackHole(other);
+    setFallProgress(0);
+    resetRunUI();
+
+    blackHoleInputs.forEach((input) => {
+      input.checked = input.value === other;
+    });
+    if (startDescentButton) startDescentButton.disabled = false;
+    if (descentSummary) descentSummary.textContent = "";
+    if (repeatRunHint && previous) {
+      repeatRunHint.hidden = false;
+      repeatRunHint.textContent = `You already rode the fall into the ${previous} black hole. This run starts fresh with the ${other} black hole.`;
+    }
+
     showScene("selecting");
   }
 
   tryOtherBlackHoleButton?.addEventListener("click", resetForOtherBlackHole);
+
+  // A genuine restart, unlike "try the other black hole" -- every
+  // module-singleton in state.ts goes back to its first-visit value,
+  // including completedBlackHoles, and the visitor lands on the hero scene
+  // rather than mid-way through the flow.
+  function replayExperience(): void {
+    if (!root) return;
+    resetAllRuns();
+    resetRunUI();
+
+    blackHoleInputs.forEach((input) => {
+      input.checked = false;
+    });
+    if (startDescentButton) startDescentButton.disabled = true;
+    if (descentSummary) descentSummary.textContent = "";
+    if (repeatRunHint) {
+      repeatRunHint.hidden = true;
+      repeatRunHint.textContent = "";
+    }
+
+    showScene("hero");
+  }
+
+  replayExperienceButton?.addEventListener("click", replayExperience);
 }
 
 initExperience();

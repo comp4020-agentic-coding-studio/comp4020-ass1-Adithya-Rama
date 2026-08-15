@@ -391,6 +391,67 @@ const supermassiveStats = [
             </button>
           </div>
         </section>
+
+        <section class="scene scene-comparison" aria-hidden="true" inert>
+          <h2>Both black holes, compared</h2>
+          <p class="scene-question">You've now ridden the fall into both.</p>
+
+          <div class="comparison-pair">
+            <div class="comparison-side comparison-side-stellar">
+              <img
+                class="comparison-image"
+                src={withBase("img/astronaut-spaghetti.webp")}
+                alt="An astronaut stretched into an extreme thread by severe tidal forces"
+              />
+              <p class="comparison-label">Stellar</p>
+              <p class="comparison-detail">Smaller horizon · stronger tidal gradient</p>
+            </div>
+            <div class="comparison-side comparison-side-supermassive">
+              <img
+                class="comparison-image"
+                src={withBase("img/astronaut-reach-warm.webp")}
+                alt="An astronaut mildly stretched by comparatively gentle tidal forces"
+              />
+              <p class="comparison-label">Supermassive</p>
+              <p class="comparison-detail">Larger horizon · weaker gradient at the horizon</p>
+            </div>
+          </div>
+
+          <figure class="comparison-chart">
+            <svg viewBox="0 0 220 110" role="img" aria-labelledby="comparison-chart-title">
+              <title id="comparison-chart-title"
+                >Conceptual tidal stress rising as each black hole's horizon is approached</title
+              >
+              <line class="comparison-chart-axis" x1="10" y1="95" x2="210" y2="95"></line>
+              <line class="comparison-chart-horizon" x1="170" y1="8" x2="170" y2="95"></line>
+              <path class="comparison-chart-curve comparison-chart-curve-stellar" d="M10,90 C90,88 140,68 170,14"
+              ></path>
+              <path
+                class="comparison-chart-curve comparison-chart-curve-supermassive"
+                d="M10,92 C90,91 140,88 170,78"
+              ></path>
+            </svg>
+            <figcaption class="comparison-chart-caption">
+              Conceptual illustration, not measured data — tidal stress vs. distance to horizon.
+            </figcaption>
+          </figure>
+
+          <p class="comparison-conclusion">Bigger does not necessarily mean more violent at the horizon.</p>
+          <p class="comparison-detail-line">
+            The horizon and the region where tidal forces destroy you are not the same thing.
+          </p>
+
+          <div class="hero-cta">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="replay-experience"
+              data-testid="replay-experience"
+            >
+              Replay experience
+            </button>
+          </div>
+        </section>
       </main>
     </div>
 
@@ -501,7 +562,8 @@ const supermassiveStats = [
   .experience[data-scene="selecting"] .scene-selecting,
   .experience[data-scene="syncing"] .scene-syncing,
   .experience[data-scene="falling"] .scene-falling,
-  .experience[data-scene="outcome"] .scene-outcome {
+  .experience[data-scene="outcome"] .scene-outcome,
+  .experience[data-scene="comparison"] .scene-comparison {
     opacity: 1;
     pointer-events: auto;
   }
@@ -1266,6 +1328,125 @@ const supermassiveStats = [
     color: var(--color-text);
   }
 
+  /* Both variants have now been ridden, so unlike the single-outcome scene
+     this has nothing left to compute per-run -- the pairing of stellar vs
+     supermassive is fixed, which is why the markup above is static rather
+     than JS-populated. */
+  .comparison-pair {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-lg);
+  }
+
+  .comparison-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3xs);
+  }
+
+  .comparison-image {
+    width: 6.5rem;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+  }
+
+  .comparison-side-stellar .comparison-image {
+    box-shadow: var(--glow-you);
+  }
+
+  .comparison-side-supermassive .comparison-image {
+    box-shadow: var(--glow-earth);
+  }
+
+  .comparison-label {
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+
+  .comparison-detail {
+    margin: 0;
+    max-width: 11rem;
+    font-size: var(--text-label);
+    text-align: center;
+    color: var(--color-text-faint);
+  }
+
+  /* A conceptual curve, not plotted data -- the figcaption says so
+     explicitly per "label that clearly", so this never reads as a claim of
+     measurement. */
+  .comparison-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3xs);
+    margin: 0;
+    width: 100%;
+    max-width: 20rem;
+  }
+
+  .comparison-chart svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .comparison-chart-axis {
+    stroke: var(--color-text-faint);
+    stroke-width: 1;
+  }
+
+  .comparison-chart-horizon {
+    stroke: var(--color-text-faint);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .comparison-chart-curve {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  .comparison-chart-curve-stellar {
+    stroke: var(--color-you);
+  }
+
+  .comparison-chart-curve-supermassive {
+    stroke: var(--color-earth);
+  }
+
+  .comparison-chart-caption {
+    margin: 0;
+    max-width: 22rem;
+    font-size: var(--text-label);
+    text-align: center;
+    color: var(--color-text-faint);
+  }
+
+  .comparison-conclusion {
+    margin: 0;
+    max-width: 28rem;
+    font-size: var(--text-h2);
+    font-weight: 600;
+    text-align: center;
+    color: var(--color-text);
+  }
+
+  .comparison-detail-line {
+    margin: 0;
+    max-width: 26rem;
+    font-size: var(--text-small);
+    text-align: center;
+    color: var(--color-text-dim);
+  }
+
   @keyframes hero-drift {
     from {
       transform: scale(1.04) translate(0, 0);
@@ -1466,6 +1647,10 @@ const supermassiveStats = [
       top: calc(100% - 10px);
       left: 50%;
       transform: scaleY(var(--signal-stretch, 2));
+    }
+
+    .comparison-pair {
+      gap: var(--space-md);
     }
   }
 
