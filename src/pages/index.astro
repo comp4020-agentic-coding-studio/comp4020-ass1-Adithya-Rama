@@ -632,8 +632,11 @@ const supermassiveStats = [
     gap: var(--space-sm);
   }
 
+  /* Invites the first tap, then settles -- a permanently-pulsing button is
+     exactly the "distracting constant movement" the motion pass calls out to
+     avoid, so this runs a few times and stops rather than looping forever. */
   .btn-pulse {
-    animation: cta-pulse 2.4s ease-in-out infinite;
+    animation: cta-pulse 2.4s ease-in-out 3;
   }
 
   .scene-selecting h2 {
@@ -1202,7 +1205,11 @@ const supermassiveStats = [
     opacity: 0;
     transform: scaleX(1);
     transition-property: left, transform, opacity, background-color, box-shadow;
-    transition-timing-function: linear;
+    /* Position travels at the pulse's fixed signal speed (linear = constant
+       velocity), but the stretch/fade/colour shift that reads as "arriving"
+       eases instead -- a mechanical linear ease on all five properties made
+       the arrival feel like a slide, not a signal settling in. */
+    transition-timing-function: linear, ease-out, ease-out, ease-out, ease-out;
   }
 
   .signal-pulse.is-armed {
@@ -1447,6 +1454,51 @@ const supermassiveStats = [
     color: var(--color-text-dim);
   }
 
+  /* Result reveal: keyed to the [data-scene] attribute (not the bare class)
+     so the entrance replays every time the scene becomes active again --
+     these scenes can be revisited (another black hole, another comparison),
+     unlike the hero's one-shot title-reveal. A short, staggered fade+rise,
+     never a bounce, so the sequence reads as "revealed in order" rather than
+     drawing attention to the motion itself. The outcome/comparison portrait
+     gets its own tidal-settle keyframe instead -- a brief vertical
+     overshoot-and-settle that nods at spaghettification without literally
+     re-animating the stretch. */
+  .experience[data-scene="outcome"] .outcome-image {
+    animation: tidal-settle 0.55s var(--ease-standard) both;
+  }
+
+  .experience[data-scene="outcome"] .outcome-headline {
+    animation: result-reveal 0.55s var(--ease-standard) 0.08s both;
+  }
+
+  .experience[data-scene="outcome"] .outcome-stats {
+    animation: result-reveal 0.55s var(--ease-standard) 0.16s both;
+  }
+
+  .experience[data-scene="outcome"] .outcome-reveal {
+    animation: result-reveal 0.55s var(--ease-standard) 0.26s both;
+  }
+
+  .experience[data-scene="comparison"] .comparison-side-stellar .comparison-image {
+    animation: tidal-settle 0.55s var(--ease-standard) both;
+  }
+
+  .experience[data-scene="comparison"] .comparison-side-supermassive .comparison-image {
+    animation: tidal-settle 0.55s var(--ease-standard) 0.12s both;
+  }
+
+  .experience[data-scene="comparison"] .comparison-chart {
+    animation: result-reveal 0.55s var(--ease-standard) 0.2s both;
+  }
+
+  .experience[data-scene="comparison"] .comparison-conclusion {
+    animation: result-reveal 0.55s var(--ease-standard) 0.3s both;
+  }
+
+  .experience[data-scene="comparison"] .comparison-detail-line {
+    animation: result-reveal 0.55s var(--ease-standard) 0.38s both;
+  }
+
   @keyframes hero-drift {
     from {
       transform: scale(1.04) translate(0, 0);
@@ -1551,6 +1603,30 @@ const supermassiveStats = [
     100% {
       top: calc(100% - 10px);
       opacity: 0;
+    }
+  }
+
+  @keyframes result-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes tidal-settle {
+    from {
+      opacity: 0;
+      transform: scaleY(1.08) translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scaleY(1) translateY(0);
     }
   }
 
@@ -1661,16 +1737,39 @@ const supermassiveStats = [
     .hero-title,
     .split-line,
     .btn-pulse,
-    .sync-clock,
-    .sync-connector-pulse,
+    /* These two need the same selector (not the bare class) used where the
+       animation is actually declared -- .sync-stage.synced outranks a bare
+       .sync-clock/.sync-connector-pulse selector, so a plain class-level
+       override here was silently losing the specificity fight and the
+       clock-snap bounce / connector pulse still played under reduced motion. */
+    .sync-stage.synced .sync-clock,
+    .sync-stage.synced .sync-connector-pulse,
     .cone-arrow,
-    .escape-thrust-fill {
+    .escape-thrust-fill,
+    .experience[data-scene="outcome"] .outcome-image,
+    .experience[data-scene="outcome"] .outcome-headline,
+    .experience[data-scene="outcome"] .outcome-stats,
+    .experience[data-scene="outcome"] .outcome-reveal,
+    .experience[data-scene="comparison"] .comparison-side-stellar .comparison-image,
+    .experience[data-scene="comparison"] .comparison-side-supermassive .comparison-image,
+    .experience[data-scene="comparison"] .comparison-chart,
+    .experience[data-scene="comparison"] .comparison-conclusion,
+    .experience[data-scene="comparison"] .comparison-detail-line {
       animation: none;
       transition: none;
     }
 
     .hero-title,
-    .split-line {
+    .split-line,
+    .experience[data-scene="outcome"] .outcome-image,
+    .experience[data-scene="outcome"] .outcome-headline,
+    .experience[data-scene="outcome"] .outcome-stats,
+    .experience[data-scene="outcome"] .outcome-reveal,
+    .experience[data-scene="comparison"] .comparison-side-stellar .comparison-image,
+    .experience[data-scene="comparison"] .comparison-side-supermassive .comparison-image,
+    .experience[data-scene="comparison"] .comparison-chart,
+    .experience[data-scene="comparison"] .comparison-conclusion,
+    .experience[data-scene="comparison"] .comparison-detail-line {
       opacity: 1;
       transform: none;
     }
