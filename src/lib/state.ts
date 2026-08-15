@@ -27,3 +27,17 @@ export function setFallProgress(value: number): void {
 export function getFallProgress(): number {
   return fallProgress;
 }
+
+// Whether the visitor has already ridden the fall to its outcome at least
+// once. "Try the other black hole" resets blackHole/fallProgress for a
+// second run but must NOT reset this -- it's what lets the selecting scene
+// acknowledge the earlier run instead of pretending this is a first visit.
+let completedRun = false;
+
+export function setCompletedRun(value: boolean): void {
+  completedRun = value;
+}
+
+export function getCompletedRun(): boolean {
+  return completedRun;
+}

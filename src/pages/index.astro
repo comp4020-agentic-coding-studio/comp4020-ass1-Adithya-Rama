@@ -80,6 +80,7 @@ const supermassiveStats = [
           <h2>Choose your black hole</h2>
           <p class="scene-question">Which one is safer to fall into?</p>
           <p class="scene-hint">Hover, focus, or select each to compare.</p>
+          <p class="scene-hint" id="repeat-run-hint" hidden></p>
 
           <fieldset class="blackhole-choice">
             <legend class="visually-hidden">Select a black hole to fall into</legend>
@@ -280,6 +281,15 @@ const supermassiveStats = [
               >
                 Fire engines
               </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="see-outcome"
+                data-testid="see-outcome"
+                hidden
+              >
+                See the outcome
+              </button>
             </div>
           </div>
 
@@ -339,6 +349,45 @@ const supermassiveStats = [
             </button>
             <button type="button" class="btn btn-primary" id="send-signal" data-testid="send-signal">
               Send: I'm OK
+            </button>
+          </div>
+        </section>
+
+        <section class="scene scene-outcome" aria-hidden="true" inert>
+          <h2>Tidal forces</h2>
+          <p class="scene-question">Different black holes. Different fates.</p>
+
+          <img class="outcome-image" id="outcome-image" src={withBase("img/astronaut-spaghetti.webp")} alt="" />
+
+          <p class="outcome-headline" id="outcome-headline"></p>
+
+          <dl class="outcome-stats">
+            <div class="outcome-stat">
+              <dt>Tidal stress at horizon</dt>
+              <dd id="outcome-stat-tidal">—</dd>
+            </div>
+            <div class="outcome-stat">
+              <dt>Horizon crossing</dt>
+              <dd id="outcome-stat-crossing">—</dd>
+            </div>
+            <div class="outcome-stat">
+              <dt>Interior fate</dt>
+              <dd>Unavoidable</dd>
+            </div>
+          </dl>
+
+          <p class="outcome-reveal">The larger black hole can be gentler at the horizon.</p>
+
+          <p class="visually-hidden" aria-live="polite" id="outcome-status"></p>
+
+          <div class="hero-cta">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="try-other-blackhole"
+              data-testid="try-other-blackhole"
+            >
+              Try the other black hole
             </button>
           </div>
         </section>
@@ -451,7 +500,8 @@ const supermassiveStats = [
   .experience[data-scene="hero"] .scene-hero,
   .experience[data-scene="selecting"] .scene-selecting,
   .experience[data-scene="syncing"] .scene-syncing,
-  .experience[data-scene="falling"] .scene-falling {
+  .experience[data-scene="falling"] .scene-falling,
+  .experience[data-scene="outcome"] .scene-outcome {
     opacity: 1;
     pointer-events: auto;
   }
@@ -1153,6 +1203,67 @@ const supermassiveStats = [
     font-size: var(--text-small);
     font-weight: 600;
     color: var(--color-text-dim);
+  }
+
+  /* The outcome scene answers the trick question from the black-hole choice
+     screen: tidalGain in fall-sim.ts already makes the stellar hole's tidal
+     stress rise to "extreme" by MAX_FALL_PROGRESS while the supermassive
+     hole's stays "mild" -- this scene just reads describeTidalStress() back,
+     rather than hardcoding a second copy of that comparison. */
+  .outcome-image {
+    width: 8rem;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+  }
+
+  .outcome-headline {
+    margin: 0;
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .outcome-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs) var(--space-lg);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 32rem;
+  }
+
+  .outcome-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .outcome-stat dt {
+    margin: 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  .outcome-stat dd {
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-text-dim);
+  }
+
+  .outcome-reveal {
+    margin: 0;
+    max-width: 26rem;
+    font-size: var(--text-small);
+    font-style: italic;
+    color: var(--color-text);
   }
 
   @keyframes hero-drift {

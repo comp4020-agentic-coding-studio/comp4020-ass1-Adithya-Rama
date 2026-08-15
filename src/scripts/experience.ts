@@ -3,7 +3,14 @@
 // panel is visible/interactive, not a page navigation. Kept intentionally
 // tiny: this is the first client-side JS in the project (see CLAUDE.md,
 // "prefer the simplest architecture that satisfies the contract").
-import { getBlackHole, setBlackHole, getFallProgress, setFallProgress, type BlackHoleType } from "../lib/state";
+import {
+  getBlackHole,
+  setBlackHole,
+  getFallProgress,
+  setFallProgress,
+  setCompletedRun,
+  type BlackHoleType,
+} from "../lib/state";
 import {
   computeFallMetrics,
   formatClock,
@@ -15,6 +22,7 @@ import {
   computeSignalTravelMs,
   MAX_FALL_PROGRESS,
 } from "../lib/fall-sim";
+import { withBase } from "../lib/base";
 
 export function initExperience(): void {
   const root = document.querySelector<HTMLElement>('[data-testid="interaction-output"]');
@@ -134,6 +142,36 @@ export function initExperience(): void {
   const escapeControl = root.querySelector<HTMLButtonElement>("#escape-control");
   const escapeReadout = root.querySelector<HTMLElement>("#escape-readout");
   const escapeCoreLine = root.querySelector<HTMLElement>("#escape-core-line");
+  const seeOutcomeButton = root.querySelector<HTMLButtonElement>("#see-outcome");
+  const repeatRunHint = root.querySelector<HTMLElement>("#repeat-run-hint");
+  const outcomeImage = root.querySelector<HTMLImageElement>("#outcome-image");
+  const outcomeHeadline = root.querySelector<HTMLElement>("#outcome-headline");
+  const outcomeStatTidal = root.querySelector<HTMLElement>("#outcome-stat-tidal");
+  const outcomeStatCrossing = root.querySelector<HTMLElement>("#outcome-stat-crossing");
+  const outcomeStatus = root.querySelector<HTMLElement>("#outcome-status");
+  const tryOtherBlackHoleButton = root.querySelector<HTMLButtonElement>("#try-other-blackhole");
+
+  // Copy differs by black hole, but the "Interior fate: Unavoidable" stat in
+  // the markup is identical for both -- that's the trick-question reveal
+  // itself (the larger hole is gentler *at the horizon*, not gentler
+  // overall), so it's never duplicated per-type here.
+  const OUTCOME_COPY: Record<
+    BlackHoleType,
+    { headline: string; crossing: string; image: string; alt: string }
+  > = {
+    stellar: {
+      headline: "Spaghettified well before the horizon.",
+      crossing: "Rapid destruction",
+      image: "img/astronaut-spaghetti.webp",
+      alt: "An astronaut stretched into an extreme thread by severe tidal forces",
+    },
+    supermassive: {
+      headline: "Crossed the horizon intact.",
+      crossing: "Crossed intact",
+      image: "img/astronaut-reach-warm.webp",
+      alt: "An astronaut mildly stretched by comparatively gentle tidal forces",
+    },
+  };
 
   // Elements whose transition duration is stretched to the cinematic crossing
   // length (or shortened under reduced motion) for the crossing sequence,
@@ -378,11 +416,42 @@ export function initExperience(): void {
         escapeReadout.textContent = "Thrust: exhausted · Local velocity: irrelevant";
       }
       if (escapeCoreLine) escapeCoreLine.setAttribute("aria-hidden", "false");
+      if (seeOutcomeButton) seeOutcomeButton.hidden = false;
       if (fallStatus) fallStatus.textContent = "Every future direction leads inward.";
     }, duration);
   }
 
   escapeControl?.addEventListener("click", attemptEscape);
+
+  // Reads the black hole actually chosen this run and the fall-sim metrics
+  // it produced, rather than hardcoding a second stellar/supermassive
+  // comparison -- describeTidalStress() is the one source of truth for
+  // "severe" vs "mild" (see fall-sim.ts), so the two never drift apart.
+  function renderOutcome(): void {
+    const blackHole = getBlackHole() ?? "stellar";
+    const metrics = computeFallMetrics(getFallProgress(), blackHole);
+    const copy = OUTCOME_COPY[blackHole];
+
+    if (outcomeImage) {
+      outcomeImage.src = withBase(copy.image);
+      outcomeImage.alt = copy.alt;
+    }
+    if (outcomeHeadline) outcomeHeadline.textContent = copy.headline;
+    if (outcomeStatTidal) {
+      const tidal = describeTidalStress(metrics.tidalStress);
+      outcomeStatTidal.textContent = tidal.charAt(0).toUpperCase() + tidal.slice(1);
+    }
+    if (outcomeStatCrossing) outcomeStatCrossing.textContent = copy.crossing;
+    if (outcomeStatus) {
+      outcomeStatus.textContent = `Outcome shown for the ${blackHole} black hole: ${copy.headline}`;
+    }
+    setCompletedRun(true);
+  }
+
+  seeOutcomeButton?.addEventListener("click", () => {
+    renderOutcome();
+    showScene("outcome");
+  });
 
   beginDescentButton?.addEventListener("click", () => {
     renderFall(getFallProgress());
@@ -473,6 +542,115 @@ export function initExperience(): void {
   }
 
   sendSignalButton?.addEventListener("click", sendSignal);
+
+  // "Resets simulation while retaining that the user has already completed
+  // one run": every per-run flag and readout below returns to its initial
+  // value, but completedRun (state.ts) is deliberately left set so the
+  // selecting scene can acknowledge this isn't a first visit -- unlike
+  // blackHole/fallProgress, which a fresh run must genuinely restart from.
+  // Reroutes to "selecting" (not straight back into falling) with the other
+  // black hole pre-checked, since #repeat-run-hint lives in that scene.
+  function resetForOtherBlackHole(): void {
+    if (!root) return;
+    const previous = getBlackHole();
+    const other: BlackHoleType = previous === "supermassive" ? "stellar" : "supermassive";
+
+    setCompletedRun(true);
+    setBlackHole(other);
+    setFallProgress(0);
+
+    crossing = false;
+    crossed = false;
+    escaping = false;
+    escapeAttempted = false;
+    holding = false;
+    lastFrameTime = null;
+    youClockSeconds = 0;
+    if (youClockIntervalId !== undefined) {
+      clearInterval(youClockIntervalId);
+      youClockIntervalId = undefined;
+    }
+    delete root.dataset.horizon;
+    cinematicTargets.forEach((el) => {
+      el.style.transitionDuration = "";
+    });
+
+    blackHoleInputs.forEach((input) => {
+      input.checked = input.value === other;
+    });
+    if (startDescentButton) startDescentButton.disabled = false;
+    if (descentSummary) descentSummary.textContent = "";
+    if (repeatRunHint && previous) {
+      repeatRunHint.hidden = false;
+      repeatRunHint.textContent = `You already rode the fall into the ${previous} black hole. This run starts fresh with the ${other} black hole.`;
+    }
+
+    syncStage?.classList.remove("synced");
+    if (syncButton) syncButton.hidden = false;
+    if (beginDescentButton) beginDescentButton.hidden = true;
+    if (syncStatus) syncStatus.textContent = "";
+    if (clockYou) clockYou.textContent = "--:--:--";
+    if (clockEarth) clockEarth.textContent = "--:--:--";
+
+    if (descendControl) {
+      descendControl.disabled = false;
+      descendControl.textContent = "Hold to descend";
+      descendControl.setAttribute("aria-pressed", "false");
+    }
+    if (fallHint) {
+      fallHint.textContent =
+        "Hold the control below, or hold Arrow Down / S, to descend. Release to hold your position.";
+    }
+    if (fallStatus) fallStatus.textContent = "";
+    if (fallClockYou) fallClockYou.textContent = "00:00:00";
+    if (fallClockEarth) fallClockEarth.textContent = "00:00:00";
+    if (fallReadoutYou) fallReadoutYou.textContent = "Distance to horizon: 100%";
+    if (fallReadoutEarth) fallReadoutEarth.textContent = "Signal: strong";
+    if (fallCaption) fallCaption.textContent = "Redshift ×1.0 · Tidal stress: mild";
+    timelineSteps.forEach((step) => {
+      step.classList.remove("is-active", "is-complete");
+      step.removeAttribute("aria-current");
+    });
+    if (horizonCrossedPanel) {
+      horizonCrossedPanel.setAttribute("inert", "");
+      horizonCrossedPanel.setAttribute("aria-hidden", "true");
+    }
+
+    if (escapeAttempt) {
+      escapeAttempt.setAttribute("inert", "");
+      escapeAttempt.setAttribute("aria-hidden", "true");
+      delete escapeAttempt.dataset.escape;
+    }
+    if (escapeControl) {
+      escapeControl.disabled = false;
+      escapeControl.textContent = "Fire engines";
+    }
+    if (escapeReadout) escapeReadout.textContent = "Thrust: idle · Local velocity: steady";
+    if (escapeCoreLine) escapeCoreLine.setAttribute("aria-hidden", "true");
+    if (seeOutcomeButton) seeOutcomeButton.hidden = true;
+
+    if (signalTimeoutId !== undefined) {
+      clearTimeout(signalTimeoutId);
+      signalTimeoutId = undefined;
+    }
+    signalSending = false;
+    if (sendSignalButton) {
+      sendSignalButton.disabled = false;
+      sendSignalButton.textContent = "Send: I'm OK";
+    }
+    if (signalStatus) signalStatus.textContent = "";
+    if (signalOutgoing) signalOutgoing.textContent = "Idle";
+    if (signalLatency) signalLatency.textContent = "—";
+    if (signalObserved) signalObserved.textContent = "—";
+    if (signalRedshift) signalRedshift.textContent = "—";
+    if (signalReceived) signalReceived.textContent = "—";
+    signalPulse?.classList.remove("is-armed", "is-arriving");
+
+    renderFall(0);
+    showScene("selecting");
+  }
+
+  tryOtherBlackHoleButton?.addEventListener("click", resetForOtherBlackHole);
 }
 
 initExperience();
