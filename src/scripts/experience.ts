@@ -113,6 +113,8 @@ export function initExperience(): void {
   const EVENT_HORIZON_APPROACH_PROGRESS = 0.8;
   const CROSSING_DURATION_MS = 3200;
   const CROSSING_DURATION_MS_REDUCED = 500;
+  const ESCAPE_ATTEMPT_DURATION_MS = 1400;
+  const ESCAPE_ATTEMPT_DURATION_MS_REDUCED = 400;
 
   const descendControl = root.querySelector<HTMLButtonElement>("#descend-control");
   const fallHint = root.querySelector<HTMLElement>("#fall-hint");
@@ -128,6 +130,10 @@ export function initExperience(): void {
   const horizonCrossedHeading = root.querySelector<HTMLElement>("#horizon-crossed-heading");
   const fallAstronautCool = root.querySelector<HTMLElement>(".fall-astronaut-cool");
   const fallAstronautWarm = root.querySelector<HTMLElement>(".fall-astronaut-warm");
+  const escapeAttempt = root.querySelector<HTMLElement>("#escape-attempt");
+  const escapeControl = root.querySelector<HTMLButtonElement>("#escape-control");
+  const escapeReadout = root.querySelector<HTMLElement>("#escape-readout");
+  const escapeCoreLine = root.querySelector<HTMLElement>("#escape-core-line");
 
   // Elements whose transition duration is stretched to the cinematic crossing
   // length (or shortened under reduced motion) for the crossing sequence,
@@ -139,6 +145,8 @@ export function initExperience(): void {
 
   let crossing = false;
   let crossed = false;
+  let escaping = false;
+  let escapeAttempted = false;
   let youClockSeconds = 0;
   let youClockIntervalId: ReturnType<typeof setInterval> | undefined;
 
@@ -317,6 +325,10 @@ export function initExperience(): void {
       horizonCrossedPanel.removeAttribute("inert");
       horizonCrossedPanel.setAttribute("aria-hidden", "false");
     }
+    if (escapeAttempt) {
+      escapeAttempt.removeAttribute("inert");
+      escapeAttempt.setAttribute("aria-hidden", "false");
+    }
     startYouClockTicking();
     if (horizonCrossedHeading) {
       horizonCrossedHeading.setAttribute("tabindex", "-1");
@@ -333,6 +345,44 @@ export function initExperience(): void {
       beginCrossing();
     }
   });
+
+  // "One last agency moment": a single brief attempt, not a repeatable
+  // toggle. The cone and thrust meter both flare outward as if escape were
+  // on the table, then settle back to the same narrow, inward-converging
+  // geometry that was already true -- recoloured and paired with the core
+  // line, so the point is felt rather than just stated. Kept to one shot so
+  // it reinforces the crossing's own point-of-no-return framing instead of
+  // becoming a game to retry.
+  function attemptEscape(): void {
+    if (!crossed || escaping || escapeAttempted) return;
+    escaping = true;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = prefersReducedMotion
+      ? ESCAPE_ATTEMPT_DURATION_MS_REDUCED
+      : ESCAPE_ATTEMPT_DURATION_MS;
+
+    if (escapeAttempt) escapeAttempt.dataset.escape = "attempting";
+    if (escapeControl) {
+      escapeControl.disabled = true;
+      escapeControl.textContent = "Engines firing…";
+    }
+    if (escapeReadout) escapeReadout.textContent = "Thrust: firing · Local velocity: rising";
+    if (fallStatus) fallStatus.textContent = "Attempting escape. Engines firing.";
+
+    setTimeout(() => {
+      escaping = false;
+      escapeAttempted = true;
+      if (escapeAttempt) escapeAttempt.dataset.escape = "inevitable";
+      if (escapeControl) escapeControl.textContent = "No route exists";
+      if (escapeReadout) {
+        escapeReadout.textContent = "Thrust: exhausted · Local velocity: irrelevant";
+      }
+      if (escapeCoreLine) escapeCoreLine.setAttribute("aria-hidden", "false");
+      if (fallStatus) fallStatus.textContent = "Every future direction leads inward.";
+    }, duration);
+  }
+
+  escapeControl?.addEventListener("click", attemptEscape);
 
   beginDescentButton?.addEventListener("click", () => {
     renderFall(getFallProgress());

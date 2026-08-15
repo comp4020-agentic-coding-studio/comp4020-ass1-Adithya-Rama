@@ -252,6 +252,37 @@ const supermassiveStats = [
             <p class="horizon-earth-copy">You can no longer send a signal back.</p>
           </div>
 
+          <div class="escape-attempt" id="escape-attempt" aria-hidden="true" inert>
+            <p class="escape-lede">One last option</p>
+            <div class="future-cone" aria-hidden="true">
+              <svg viewBox="0 0 200 140" aria-hidden="true" focusable="false">
+                <line class="cone-arrow" data-arrow="0" x1="100" y1="130" x2="100" y2="20"></line>
+                <line class="cone-arrow" data-arrow="1" x1="100" y1="130" x2="100" y2="20"></line>
+                <line class="cone-arrow" data-arrow="2" x1="100" y1="130" x2="100" y2="20"></line>
+                <line class="cone-arrow" data-arrow="3" x1="100" y1="130" x2="100" y2="20"></line>
+                <line class="cone-arrow" data-arrow="4" x1="100" y1="130" x2="100" y2="20"></line>
+                <circle class="cone-origin" cx="100" cy="130" r="4"></circle>
+              </svg>
+            </div>
+            <div class="escape-thrust-meter" aria-hidden="true">
+              <span class="escape-thrust-fill"></span>
+            </div>
+            <p class="escape-readout" id="escape-readout">Thrust: idle · Local velocity: steady</p>
+            <p class="escape-core-line" id="escape-core-line" aria-hidden="true">
+              Inside the horizon, inward is not merely a direction. It is part of your future.
+            </p>
+            <div class="hero-cta">
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="escape-control"
+                data-testid="escape-control"
+              >
+                Fire engines
+              </button>
+            </div>
+          </div>
+
           <ol class="fall-timeline" aria-label="Fall stage">
             <li class="fall-timeline-step is-active" data-stage="approach" aria-current="step">
               Approach
@@ -810,6 +841,159 @@ const supermassiveStats = [
     color: var(--color-earth-strong, var(--color-earth));
   }
 
+  /* The escape attempt is "one last agency moment" immediately after
+     crossing -- revealed by finishCrossing() the same way the crossed panel
+     is, and never shown again once spent (see attemptEscape() in
+     experience.ts). The cone's five lines share one pivot (the origin dot)
+     and are re-angled per data-escape state via --cone-angle, rather than
+     drawn as five separate static diagrams, so the "hope, then collapse"
+     read comes from one continuous shape changing, not a cut between two
+     pictures. */
+  .escape-attempt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    width: 100%;
+    max-width: 26rem;
+    opacity: 0;
+    transition: opacity var(--duration-medium) var(--ease-standard);
+  }
+
+  .experience[data-horizon="crossed"] .escape-attempt {
+    opacity: 1;
+  }
+
+  .escape-lede {
+    margin: 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  .future-cone {
+    width: 12rem;
+  }
+
+  .future-cone svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .cone-origin {
+    fill: var(--color-text);
+  }
+
+  .cone-arrow {
+    fill: none;
+    stroke: var(--color-text-dim);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transform-box: view-box;
+    transform-origin: 100px 130px;
+    transform: rotate(var(--cone-angle, 0deg));
+    transition:
+      transform 0.6s var(--ease-standard),
+      stroke var(--duration-medium) var(--ease-standard);
+  }
+
+  /* Idle/default already tells the truth (this widget only exists once
+     you're inside the horizon) -- a narrow, converging fan. "Attempting"
+     briefly widens it to suggest escape is on the table; "inevitable"
+     returns to the same narrow geometry, recoloured, to make clear that was
+     never really available. */
+  .cone-arrow[data-arrow="0"] {
+    --cone-angle: -8deg;
+  }
+
+  .cone-arrow[data-arrow="1"] {
+    --cone-angle: -4deg;
+  }
+
+  .cone-arrow[data-arrow="3"] {
+    --cone-angle: 4deg;
+  }
+
+  .cone-arrow[data-arrow="4"] {
+    --cone-angle: 8deg;
+  }
+
+  .escape-attempt[data-escape="attempting"] .cone-arrow {
+    stroke: var(--color-you);
+    filter: drop-shadow(0 0 4px var(--color-you-dim));
+  }
+
+  .escape-attempt[data-escape="attempting"] .cone-arrow[data-arrow="0"] {
+    --cone-angle: -60deg;
+  }
+
+  .escape-attempt[data-escape="attempting"] .cone-arrow[data-arrow="1"] {
+    --cone-angle: -30deg;
+  }
+
+  .escape-attempt[data-escape="attempting"] .cone-arrow[data-arrow="3"] {
+    --cone-angle: 30deg;
+  }
+
+  .escape-attempt[data-escape="attempting"] .cone-arrow[data-arrow="4"] {
+    --cone-angle: 60deg;
+  }
+
+  .escape-attempt[data-escape="inevitable"] .cone-arrow {
+    stroke: var(--color-earth-strong, var(--color-earth));
+  }
+
+  .escape-thrust-meter {
+    width: 10rem;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 12%);
+    overflow: hidden;
+  }
+
+  .escape-thrust-fill {
+    display: block;
+    height: 100%;
+    width: 8%;
+    background: var(--color-text-dim);
+    transition:
+      width var(--duration-medium) var(--ease-standard),
+      background var(--duration-medium) var(--ease-standard);
+  }
+
+  .escape-attempt[data-escape="attempting"] .escape-thrust-fill {
+    width: 92%;
+    background: var(--color-you);
+    box-shadow: var(--glow-you);
+  }
+
+  .escape-attempt[data-escape="inevitable"] .escape-thrust-fill {
+    width: 15%;
+    background: var(--color-earth-strong, var(--color-earth));
+  }
+
+  .escape-readout {
+    margin: 0;
+    font-size: var(--text-small);
+    color: var(--color-text-dim);
+  }
+
+  .escape-core-line {
+    margin: 0;
+    max-width: 24rem;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-text);
+    opacity: 0;
+    transition: opacity var(--duration-medium) var(--ease-standard);
+  }
+
+  .escape-attempt[data-escape="inevitable"] .escape-core-line {
+    opacity: 1;
+  }
+
   .fall-caption {
     margin: 0;
     font-size: var(--text-small);
@@ -1147,6 +1331,10 @@ const supermassiveStats = [
       width: 4.5rem;
     }
 
+    .future-cone {
+      width: 9rem;
+    }
+
     .signal-track {
       width: 2px;
       height: 3rem;
@@ -1178,8 +1366,11 @@ const supermassiveStats = [
     .split-line,
     .btn-pulse,
     .sync-clock,
-    .sync-connector-pulse {
+    .sync-connector-pulse,
+    .cone-arrow,
+    .escape-thrust-fill {
       animation: none;
+      transition: none;
     }
 
     .hero-title,
