@@ -326,3 +326,15 @@ untested.
 - `assets/ref_images/` and the originals in `assets/prod/` are reference
   material, not part of the deployed site --- don't let them get pulled into
   `dist/` by accident.
+- Every `setTimeout`/`setInterval` that drives a scripted state transition
+  (a countdown, a crossing animation, a message in flight) must be stored in
+  a module-level handle and explicitly cancelled by every path that can
+  pre-empt it --- not just the "reset" path, but any other transition that
+  can start while it's still pending. `sendSignal()`'s `signalTimeoutId` is
+  the model: found during Prompt 18 edge-case testing that `beginCrossing()`
+  could start while a signal's own timeout was still pending, so its stale
+  callback would fire after the horizon was already crossed and silently
+  re-enable the send button / overwrite the "lost" state with a stale
+  in-transit result. The fix is always the same shape: give the timer its
+  own handle, and cancel-and-resolve it from the state that pre-empts it,
+  not just from a full reset.
