@@ -178,8 +178,7 @@ const supermassiveStats = [
         <section class="scene scene-falling" aria-hidden="true" inert>
           <h2>Falling</h2>
           <p class="scene-hint" id="fall-hint">
-            Hold the control below, or hold Arrow Down / S, to descend. Release to hold your
-            position.
+            Scroll or drag to fall. Arrow Up / W pulls back out. Stop to hold your position.
           </p>
 
           <div class="viewpoint-control">
@@ -200,52 +199,86 @@ const supermassiveStats = [
             </p>
           </div>
 
-          <div class="fall-stage">
-            <div class="fall-side fall-side-you">
+          <!-- The void: the descent's actual motion. The still image is texture
+               underneath; the canvas above it carries the parallax, lensing,
+               streaks and dust, so the scene reads as travel rather than art. -->
+          <div class="fall-void-stage">
+            <img
+              class="fall-void-bg"
+              src={withBase("img/blackhole-split.webp")}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+            />
+            <canvas class="fall-void" id="fall-void" aria-hidden="true"></canvas>
+
+            <img
+              class="fall-hand"
+              src={withBase("img/astronaut-glove.webp")}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="fall-astronaut-stack" aria-hidden="true">
               <img
-                class="fall-hand"
-                src={withBase("img/astronaut-glove.webp")}
+                class="fall-astronaut fall-astronaut-cool"
+                src={withBase("img/astronaut-reach-cool.webp")}
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
                 decoding="async"
               />
-              <span class="sync-label">You</span>
-              <span class="fall-clock" id="fall-clock-you">00:00:00</span>
-              <p class="fall-readout" id="fall-readout-you">Conceptual distance to horizon: 100%</p>
+              <img
+                class="fall-astronaut fall-astronaut-warm"
+                src={withBase("img/astronaut-reach-warm.webp")}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
 
+          </div>
+
+          <div class="fall-centre">
             <div class="signal-track" aria-hidden="true">
               <span class="signal-track-line"></span>
               <span class="signal-pulse" id="signal-pulse"></span>
             </div>
 
+            <div class="fall-cue" id="fall-cue">
+              <button
+                type="button"
+                class="btn fall-cue-button"
+                id="descend-control"
+                data-testid="descend-control"
+                aria-describedby="fall-hint"
+                aria-pressed="false"
+              >
+                Fall
+              </button>
+              <span class="fall-cue-note" aria-hidden="true">Scroll · drag</span>
+            </div>
+          </div>
+
+          <div class="fall-stage">
+            <div class="fall-side fall-side-you">
+              <span class="sync-label">You</span>
+              <span class="fall-clock" id="fall-clock-you">00:00:00</span>
+              <p class="fall-readout" id="fall-readout-you">Conceptual distance to horizon: 100%</p>
+              <p class="fall-caption" id="fall-caption">
+                Conceptual redshift ×1.0 · Tidal stress: mild
+              </p>
+            </div>
+
             <div class="fall-side fall-side-earth">
-              <div class="fall-astronaut-stack">
-                <img
-                  class="fall-astronaut fall-astronaut-cool"
-                  src={withBase("img/astronaut-reach-cool.webp")}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <img
-                  class="fall-astronaut fall-astronaut-warm"
-                  src={withBase("img/astronaut-reach-warm.webp")}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
               <span class="sync-label">Earth observer</span>
               <span class="fall-clock" id="fall-clock-earth">00:00:00</span>
               <p class="fall-readout" id="fall-readout-earth">Signal: strong</p>
             </div>
           </div>
-
-          <p class="fall-caption" id="fall-caption">Conceptual redshift ×1.0 · Tidal stress: mild</p>
 
           <div class="horizon-banner" id="horizon-banner" aria-hidden="true">
             <p class="horizon-banner-title">Event Horizon</p>
@@ -309,65 +342,75 @@ const supermassiveStats = [
             </div>
           </div>
 
-          <ol class="fall-timeline" aria-label="Fall stage">
-            <li class="fall-timeline-step is-active" data-stage="approach" aria-current="step">
-              Approach
-            </li>
-            <li class="fall-timeline-step" data-stage="horizon">Horizon</li>
-            <li class="fall-timeline-step" data-stage="interior">Interior / Tidal outcome</li>
-          </ol>
+          <div class="fall-foot">
+            <div class="fall-timeline">
+              <span class="fall-timeline-label" aria-hidden="true">Fall timeline</span>
+              <div
+                class="fall-timeline-track"
+                id="fall-progressbar"
+                role="progressbar"
+                aria-label="Descent toward the event horizon"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                aria-valuetext="0% of the way to the event horizon"
+              >
+                <span class="fall-timeline-fill"></span>
+                <span class="fall-timeline-head"></span>
+              </div>
+              <ol class="fall-timeline-steps" aria-label="Fall stage">
+                <li class="fall-timeline-step is-active" data-stage="approach" aria-current="step">
+                  Approach
+                </li>
+                <li class="fall-timeline-step" data-stage="horizon">Horizon</li>
+                <li class="fall-timeline-step" data-stage="interior">Interior / Tidal outcome</li>
+              </ol>
+            </div>
 
-          <div class="signal-panel">
-            <img
-              class="signal-wave-bg"
-              src={withBase("img/blackhole-split-wave.webp")}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-            />
-            <dl class="signal-stats">
-              <div class="signal-stat">
-                <dt>Outgoing</dt>
-                <dd id="signal-outgoing">Idle</dd>
-              </div>
-              <div class="signal-stat">
-                <dt>Latency</dt>
-                <dd id="signal-latency">—</dd>
-              </div>
-              <div class="signal-stat">
-                <dt>Observed</dt>
-                <dd id="signal-observed">—</dd>
-              </div>
-              <div class="signal-stat">
-                <dt>Redshift</dt>
-                <dd id="signal-redshift">—</dd>
-              </div>
-              <div class="signal-stat">
-                <dt>Received</dt>
-                <dd id="signal-received">—</dd>
-              </div>
-            </dl>
+            <div class="signal-panel">
+              <img
+                class="signal-wave-bg"
+                src={withBase("img/blackhole-split-wave.webp")}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+              />
+              <dl class="signal-stats">
+                <div class="signal-stat">
+                  <dt>Outgoing</dt>
+                  <dd id="signal-outgoing">Idle</dd>
+                </div>
+                <div class="signal-stat">
+                  <dt>Latency</dt>
+                  <dd id="signal-latency">—</dd>
+                </div>
+                <div class="signal-stat">
+                  <dt>Observed</dt>
+                  <dd id="signal-observed">—</dd>
+                </div>
+                <div class="signal-stat">
+                  <dt>Redshift</dt>
+                  <dd id="signal-redshift">—</dd>
+                </div>
+                <div class="signal-stat">
+                  <dt>Received</dt>
+                  <dd id="signal-received">—</dd>
+                </div>
+              </dl>
+              <button
+                type="button"
+                class="btn btn-primary signal-send"
+                id="send-signal"
+                data-testid="send-signal"
+              >
+                Send: I'm OK
+              </button>
+            </div>
           </div>
 
           <p class="visually-hidden" aria-live="polite" id="fall-status"></p>
           <p class="visually-hidden" aria-live="polite" id="signal-status"></p>
-
-          <div class="hero-cta">
-            <button
-              type="button"
-              class="btn btn-primary"
-              id="descend-control"
-              data-testid="descend-control"
-              aria-describedby="fall-hint"
-              aria-pressed="false"
-            >
-              Hold to descend
-            </button>
-            <button type="button" class="btn btn-primary" id="send-signal" data-testid="send-signal">
-              Send: I'm OK
-            </button>
-          </div>
         </section>
 
         <section class="scene scene-outcome" aria-hidden="true" inert>
@@ -811,12 +854,55 @@ const supermassiveStats = [
   }
 
   .experience[data-scene="falling"] .lensing-vignette {
-    opacity: var(--fall-lensing, 0);
+    /* Closes in harder than the shared default: during a descent this is the
+       tunnel narrowing, not a decorative edge darkening. */
+    background: radial-gradient(
+      circle at 50% 50%,
+      transparent calc(26% - var(--fall-progress, 0) * 18%),
+      rgb(0 0 0 / 88%) calc(96% - var(--fall-progress, 0) * 26%)
+    );
+    opacity: calc(0.25 + var(--fall-lensing, 0) * 0.75);
   }
 
   .experience[data-scene="falling"] .gravity-glow {
     transform: scale(calc(1 + var(--fall-lensing, 0) * 0.4));
     transition: transform var(--duration-medium) var(--ease-standard);
+  }
+
+  /* The shared hero backdrop is the Earth composition, whose hole sits
+     off-centre of the 50% split line. During the descent the centred
+     composition in .fall-void-bg takes over and this recedes -- except in look
+     back, which is the one moment the visitor is meant to see Earth again. */
+  .experience[data-scene="falling"] .hero-image {
+    /* Fully out during the descent, not merely dimmed: at any visible opacity
+       its off-centre hole reads as a *second* black hole beside the centred
+       one, which is worse than no backdrop at all. */
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-standard);
+  }
+
+  /* Inside the horizon the backdrop goes calm with the canvas: dim, deeply
+     redshifted, almost still. The canvas alone going quiet while the image
+     stayed bright read as the motion stopping rather than the place changing. */
+  .experience[data-horizon="crossed"] .fall-void-bg {
+    opacity: 0.4;
+    filter: saturate(0.5) brightness(0.42) hue-rotate(-18deg);
+  }
+
+  /* Beyond the horizon the cue is disabled and the overlay panels own the
+     centre -- leaving it visible behind them just showed dead text. */
+  .experience[data-horizon="crossed"] .fall-cue,
+  .experience[data-horizon="crossing"] .fall-cue {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .experience[data-scene="falling"][data-lookback="true"] .fall-void-bg {
+    opacity: 0.12;
+  }
+
+  .experience[data-scene="falling"][data-lookback="true"] .fall-void {
+    opacity: 0.35;
   }
 
   /* "Look back" is a viewpoint change on the persistent background layers,
@@ -827,6 +913,7 @@ const supermassiveStats = [
      rest of the descent (see the hidden help text next to the toggle). */
   .experience[data-scene="falling"][data-lookback="true"] .hero-image {
     animation: none;
+    opacity: 1;
     transform: scale(calc(1 + var(--fall-lensing, 0) * 0.6))
       translateX(calc(var(--fall-lensing, 0) * -8%));
     filter: blur(calc(var(--fall-lensing, 0) * 2px)) saturate(calc(1 + var(--fall-lensing, 0) * 0.5));
@@ -840,37 +927,235 @@ const supermassiveStats = [
       contrast(calc(1 + var(--fall-lensing, 0) * 0.3));
   }
 
-  .fall-stage {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-xl);
+  /* -- the falling scene is a cockpit, not a document.
+     Every other scene is a centred, scrollable column; this one is pinned to
+     the viewport so the void is never pushed off-screen and the descent cue is
+     never below the fold. `gap: 0` is deliberate: inheriting .scene's 40px
+     inter-child gap across a dozen children is half of what produced the dead
+     band this redesign removes. */
+  .scene-falling {
+    display: grid;
+    grid-template-areas:
+      "you header earth"
+      "you centre earth"
+      "foot foot   foot";
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) minmax(0, 17rem);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    align-items: start;
+    justify-content: stretch;
+    gap: 0;
+    /* top padding clears the fixed corner wordmark, which shares this corner
+       with the YOU rail. */
+    padding: var(--space-xl) var(--space-md) var(--space-md);
+    overflow: hidden;
+  }
+
+  /* Everything in the cockpit sits over moving, sometimes very bright imagery,
+     so the small type carries its own shadow rather than needing a scrim panel
+     behind it. */
+  /* The void layer is positioned, so it paints above static siblings even at
+     z-index 0 -- the header cluster has to be positioned too or the canvas
+     swallows it. */
+  .scene-falling > h2,
+  .scene-falling > .scene-hint,
+  .scene-falling > .viewpoint-control {
+    position: relative;
+    z-index: 1;
+  }
+
+  .scene-falling > h2 {
+    grid-area: header;
+    align-self: start;
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+    text-shadow: 0 1px 6px rgb(0 0 0 / 85%);
+  }
+
+  .scene-falling > .scene-hint {
+    grid-area: header;
+    align-self: start;
+    margin: 1.75rem 0 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.06em;
+    color: var(--color-text-dim);
+    text-shadow: 0 1px 6px rgb(0 0 0 / 90%);
+  }
+
+  .scene-falling .fall-clock,
+  .scene-falling .fall-readout,
+  .scene-falling .fall-caption,
+  .scene-falling .sync-label,
+  .fall-timeline-label,
+  .fall-timeline-step,
+  .signal-stat dt,
+  .signal-stat dd {
+    text-shadow: 0 1px 6px rgb(0 0 0 / 90%);
+  }
+
+  .scene-falling > .viewpoint-control {
+    grid-area: header;
+    align-self: start;
+    margin-top: 4.25rem;
+  }
+
+  /* The void spans the whole frame rather than a middle column: the reference
+     puts the hole edge-to-edge with the readouts floating over it. Taken out of
+     the grid flow entirely so the scene's padding can't inset it. */
+  .fall-void-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .fall-void-bg {
+    position: absolute;
+    inset: -6%;
+    width: 112%;
+    height: 112%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(calc(1 + var(--fall-progress, 0) * 0.55))
+      rotate(calc(var(--fall-progress, 0) * 4deg));
+    filter: saturate(calc(1 + var(--fall-progress, 0) * 0.5))
+      brightness(calc(1 - var(--fall-progress, 0) * 0.2))
+      hue-rotate(calc(var(--fall-progress, 0) * 10deg));
+    transition:
+      opacity var(--duration-slow) var(--ease-standard),
+      transform var(--duration-medium) var(--ease-standard),
+      filter var(--duration-medium) var(--ease-standard);
+  }
+
+  .experience[data-scene="falling"] .fall-void-bg {
+    opacity: 0.92;
+  }
+
+  /* The canvas is the movement (see src/scripts/fall-void.ts); the image above
+     is texture it sits on. Pointer events are re-enabled here so drag-to-fall
+     has a surface, while the rest of the visual layer stays transparent to
+     clicks. */
+  .fall-void {
+    position: absolute;
+    inset: 0;
+    display: block;
     width: 100%;
-    max-width: 48rem;
+    height: 100%;
+    pointer-events: auto;
+    touch-action: none;
+    cursor: ns-resize;
+  }
+
+  .fall-centre {
+    position: relative;
+    z-index: 1;
+    grid-area: centre;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-md);
+    align-self: stretch;
+    padding-bottom: var(--space-sm);
+    pointer-events: none;
+  }
+
+  .fall-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3xs);
+    pointer-events: auto;
+    opacity: 1;
+    transition: opacity var(--duration-slow) var(--ease-standard);
+  }
+
+  /* The cue is an affordance, not a demand: scroll and drag are the primary
+     inputs, so once the visitor has moved at all it recedes rather than
+     continuing to advertise itself. It stays focusable and operable throughout
+     -- it is also the deliberate "cross the horizon" trigger. */
+  .fall-cue[data-seen="true"] {
+    opacity: 0.6;
+  }
+
+  .fall-cue:focus-within,
+  .fall-cue:hover {
+    opacity: 1;
+  }
+
+  .fall-cue-button {
+    border-color: var(--color-you-dim);
+    background: rgb(5 7 12 / 45%);
+    color: var(--color-you-strong);
+    font-size: var(--text-label);
+    letter-spacing: 0.24em;
+  }
+
+  .fall-cue-button:hover,
+  .fall-cue-button:focus-visible {
+    background: var(--color-you-dim);
+    box-shadow: var(--glow-you);
+  }
+
+  .fall-cue-note {
+    font-size: var(--text-label);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+    text-shadow: 0 1px 6px rgb(0 0 0 / 90%);
+  }
+
+  /* Once the threshold is reached the control is a deliberate "cross" action,
+     so telling the visitor to keep scrolling would be actively wrong. */
+  .experience[data-horizon] .fall-cue-note {
+    display: none;
+  }
+
+  /* Scoped to "approaching" only: at that point pressing is the deliberate
+     crossing action, so the cue comes back to full strength. The crossed and
+     crossing states hide it entirely (see above). */
+  .experience[data-horizon="approaching"] .fall-cue {
+    opacity: 1;
+  }
+
+  /* -- rails, not cards. The old treatment put two rounded, blurred glass
+     boxes over the middle of frame, covering the hole. These are hairline
+     columns pinned to the top corners, with a scrim only for legibility. */
+  .fall-stage {
+    display: contents;
   }
 
   .fall-side {
     position: relative;
+    z-index: 1;
     display: flex;
-    flex: 1;
     flex-direction: column;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-md) var(--space-lg);
-    border-radius: var(--radius-lg);
-    border: var(--border-hairline);
-    background: var(--surface-glass-bg);
-    backdrop-filter: blur(var(--surface-glass-blur));
+    /* stretch so the two rails read as a matched pair even though the YOU side
+       carries one more readout row than the EARTH side. */
+    align-self: stretch;
+    align-items: flex-start;
+    gap: var(--space-2xs);
+    width: 100%;
+    padding: var(--space-2xs) var(--space-sm);
+    text-align: left;
   }
 
   .fall-side-you {
-    border-color: var(--color-you-dim);
-    box-shadow: var(--glow-you);
+    grid-area: you;
+    border-left: 2px solid var(--color-you-dim);
+    background: linear-gradient(to right, rgb(5 7 12 / 55%), transparent);
   }
 
   .fall-side-earth {
-    border-color: var(--color-earth-dim);
-    box-shadow: var(--glow-earth);
+    grid-area: earth;
+    align-items: flex-end;
+    border-right: 2px solid var(--color-earth-dim);
+    background: linear-gradient(to left, rgb(5 7 12 / 55%), transparent);
+    text-align: right;
   }
 
   .fall-side-you .sync-label {
@@ -883,7 +1168,7 @@ const supermassiveStats = [
 
   .fall-clock {
     font-family: var(--font-mono);
-    font-size: var(--text-h2);
+    font-size: clamp(1.35rem, 2.4vw, 1.9rem);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.05em;
     color: var(--color-text);
@@ -891,21 +1176,43 @@ const supermassiveStats = [
 
   .fall-readout {
     margin: 0;
+    padding-top: var(--space-2xs);
+    border-top: var(--border-hairline);
+    width: 100%;
     font-size: var(--text-small);
     color: var(--color-text-dim);
   }
 
+  /* The EARTH side warms toward red as the descent deepens, the way the
+     reference's observer panel does at the horizon. */
+  .fall-side-earth .fall-readout {
+    color: color-mix(in srgb, var(--color-text-dim), var(--color-danger) calc(var(--fall-progress, 0) * 70%));
+  }
+
+  /* Foreground props live in the void now, not inside the readout cards: the
+     glove is the visitor's own hand at the edge of frame and the astronaut is
+     what Earth still sees of them, both over the scene rather than boxed. */
   .fall-hand {
-    width: 5rem;
-    opacity: 0.4;
+    position: absolute;
+    bottom: -2%;
+    left: -1%;
+    width: clamp(11rem, 26vw, 24rem);
+    opacity: 0.5;
     pointer-events: none;
-    transform: scale(calc(1 + var(--fall-lensing, 0) * 0.15));
+    transform: scale(calc(1 + var(--fall-lensing, 0) * 0.15))
+      rotate(calc(var(--fall-progress, 0) * -3deg));
     transition: transform var(--duration-medium) var(--ease-standard);
   }
 
   .fall-astronaut-stack {
-    position: relative;
-    width: 6rem;
+    position: absolute;
+    top: 46%;
+    right: 8%;
+    width: clamp(3.5rem, 7vw, 6.5rem);
+    aspect-ratio: 1;
+    pointer-events: none;
+    transform: translateY(-50%) scale(calc(1 - var(--fall-progress, 0) * 0.35));
+    transition: transform var(--duration-medium) var(--ease-standard);
   }
 
   .fall-astronaut {
@@ -948,7 +1255,22 @@ const supermassiveStats = [
     opacity: 0.1;
   }
 
+  /* State-conditional panels are positioned overlays, not flow content.
+     Hiding them with `opacity: 0` alone still reserved their full box height --
+     the escape panel's cone SVG and button row alone were ~300px -- which is
+     what produced the dead band between the readouts and the timeline. Taken
+     out of flow they cost nothing until the state that reveals them. */
+  .horizon-banner,
+  .horizon-crossed-panel,
+  .escape-attempt {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
   .horizon-banner {
+    top: 22%;
     text-align: center;
     opacity: 0;
     transition: opacity var(--duration-medium) var(--ease-standard);
@@ -981,16 +1303,12 @@ const supermassiveStats = [
      screen reader free to announce "you can no longer send a signal back"
      before that's actually true. */
   .horizon-crossed-panel {
-    position: relative;
-    width: 100%;
-    max-width: 32rem;
-    flex-shrink: 0;
+    top: 20%;
+    width: min(34rem, 88vw);
     padding: var(--space-md) var(--space-lg);
-    border-radius: var(--radius-lg);
-    border: var(--border-hairline);
-    background: var(--surface-glass-bg);
-    backdrop-filter: blur(var(--surface-glass-blur));
-    box-shadow: var(--glow-soft);
+    border-top: 1px solid var(--color-danger);
+    border-bottom: 1px solid var(--color-danger);
+    background: linear-gradient(rgb(5 7 12 / 72%), rgb(5 7 12 / 72%));
     overflow: hidden;
     text-align: center;
     opacity: 0;
@@ -1043,17 +1361,14 @@ const supermassiveStats = [
      read comes from one continuous shape changing, not a cut between two
      pictures. */
   .escape-attempt {
+    bottom: 7rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-xs);
-    width: 100%;
-    max-width: 26rem;
-    padding: var(--space-md) var(--space-lg);
-    border-radius: var(--radius-lg);
-    border: var(--border-hairline);
-    background: var(--surface-glass-bg);
-    backdrop-filter: blur(var(--surface-glass-blur));
+    gap: var(--space-2xs);
+    width: min(30rem, 90vw);
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(rgb(5 7 12 / 72%), rgb(5 7 12 / 72%));
     opacity: 0;
     transition: opacity var(--duration-medium) var(--ease-standard);
   }
@@ -1194,19 +1509,80 @@ const supermassiveStats = [
 
   .fall-caption {
     margin: 0;
-    font-size: var(--text-small);
+    padding-top: var(--space-2xs);
+    border-top: var(--border-hairline);
+    width: 100%;
+    font-size: var(--text-label);
+    letter-spacing: 0.04em;
     color: var(--color-text-faint);
   }
 
-  .fall-timeline {
+  /* -- the footer: a full-width timeline across the base of frame, as in the
+     reference, rather than a glass pill floating mid-column. */
+  .fall-foot {
+    position: relative;
+    z-index: 1;
+    grid-area: foot;
     display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    align-self: end;
+    width: 100%;
+    padding-top: var(--space-2xs);
+    border-top: var(--border-hairline);
+  }
+
+  .fall-timeline {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3xs) var(--space-sm);
+    width: 100%;
+  }
+
+  .fall-timeline-label {
+    font-size: var(--text-label);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  /* Read-only by design: a draggable handle would advertise scrubbing, and the
+     descent is expressed through input intent, not playhead position. */
+  .fall-timeline-track {
+    position: relative;
+    height: 2px;
+    background: rgb(255 255 255 / 14%);
+  }
+
+  .fall-timeline-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--fall-progress, 0) / 0.94 * 100%);
+    background: linear-gradient(to right, var(--color-you), var(--color-earth));
+    transition: width var(--duration-fast) var(--ease-standard);
+  }
+
+  .fall-timeline-head {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--fall-progress, 0) / 0.94 * 100%);
+    width: 9px;
+    height: 9px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: var(--color-you-strong);
+    box-shadow: var(--glow-you);
+    transition: left var(--duration-fast) var(--ease-standard);
+  }
+
+  .fall-timeline-steps {
+    display: flex;
+    grid-column: 2;
+    justify-content: space-between;
     gap: var(--space-sm);
     margin: 0;
-    padding: var(--space-xs) var(--space-md);
-    border-radius: 999px;
-    border: var(--border-hairline);
-    background: var(--surface-glass-bg);
-    backdrop-filter: blur(var(--surface-glass-blur));
+    padding: 0;
     list-style: none;
     font-size: var(--text-label);
     letter-spacing: 0.12em;
@@ -1268,8 +1644,9 @@ const supermassiveStats = [
   .signal-track {
     position: relative;
     flex: 0 0 auto;
-    width: 5rem;
+    width: min(30rem, 52vw);
     height: 2px;
+    margin-top: auto;
   }
 
   .signal-track-line {
@@ -1311,18 +1688,24 @@ const supermassiveStats = [
     box-shadow: var(--glow-earth);
   }
 
+  /* De-glassed into a quiet row of readouts along the base of the cockpit: it
+     is an instrument strip, not a card floating over the hole. */
   .signal-panel {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
     width: 100%;
-    max-width: 32rem;
-    flex-shrink: 0;
-    padding: var(--space-md) var(--space-lg);
-    border-radius: var(--radius-lg);
-    border: var(--border-hairline);
-    background: var(--surface-glass-bg);
-    backdrop-filter: blur(var(--surface-glass-blur));
-    box-shadow: var(--glow-soft);
+    padding: var(--space-2xs) 0 0;
+    border-top: var(--border-hairline);
     overflow: hidden;
+  }
+
+  .signal-send {
+    flex: 0 0 auto;
+    padding: var(--space-2xs) var(--space-md);
+    font-size: var(--text-label);
   }
 
   .signal-wave-bg {
@@ -1339,9 +1722,10 @@ const supermassiveStats = [
 
   .signal-stats {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-xs) var(--space-md);
+    justify-content: flex-start;
+    gap: var(--space-3xs) var(--space-md);
     margin: 0;
     padding: 0;
   }
@@ -1349,8 +1733,8 @@ const supermassiveStats = [
   .signal-stat {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    align-items: flex-start;
+    gap: 1px;
   }
 
   .signal-stat dt {
@@ -1798,8 +2182,7 @@ const supermassiveStats = [
       max-width: 100%;
     }
 
-    .sync-side,
-    .fall-side {
+    .sync-side {
       padding: var(--space-sm) var(--space-xs);
     }
 
@@ -1812,17 +2195,43 @@ const supermassiveStats = [
       height: 2px;
     }
 
-    .fall-stage {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      align-items: center;
-      gap: var(--space-2xs);
-      max-width: 100%;
+    /* The cockpit still must not scroll at 390x844, so the rails condense to a
+       side-by-side pair above the void rather than the desktop's left/right
+       columns. */
+    .scene-falling {
+      grid-template-areas:
+        "header header"
+        "you    earth"
+        "centre centre"
+        "foot   foot";
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      padding: var(--space-xl) var(--space-sm) var(--space-2xs);
     }
 
-    .fall-hand,
+    .scene-falling > .scene-hint {
+      margin-top: 1.4rem;
+    }
+
+    .scene-falling > .viewpoint-control {
+      margin-top: 3.6rem;
+    }
+
+    .fall-side {
+      padding: var(--space-2xs) var(--space-xs);
+    }
+
+    .fall-hand {
+      width: 12rem;
+      opacity: 0.4;
+    }
+
     .fall-astronaut-stack {
       display: none;
+    }
+
+    .fall-clock {
+      font-size: 1.35rem;
     }
 
     .fall-readout {
@@ -1830,18 +2239,21 @@ const supermassiveStats = [
     }
 
     .signal-track {
-      width: 1.25rem;
+      width: 72vw;
       height: 2px;
     }
 
     .escape-attempt {
-      max-width: 100%;
-      gap: var(--space-2xs);
-      padding: var(--space-sm) var(--space-md);
+      bottom: 7rem;
+      width: 94vw;
+      gap: var(--space-3xs);
+      padding: var(--space-2xs) var(--space-sm);
     }
 
     .signal-panel {
-      padding: var(--space-sm) var(--space-md);
+      flex-wrap: wrap;
+      gap: var(--space-2xs);
+      padding: var(--space-2xs) 0 0;
     }
 
     .future-cone {
@@ -1853,10 +2265,14 @@ const supermassiveStats = [
     }
 
     .fall-timeline {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3xs);
+    }
+
+    .fall-timeline-steps {
+      grid-column: 1;
       gap: var(--space-2xs);
       font-size: 0.625rem;
-      flex-wrap: wrap;
-      justify-content: center;
     }
 
     .signal-stats {
@@ -1930,6 +2346,17 @@ const supermassiveStats = [
     .cone-arrow,
     .escape-thrust-fill,
     .signal-pulse,
+    /* The descent's own layers: the canvas renderer already drops to a single
+       static frame per state change (see fall-void.ts), so what's left to
+       silence here is the CSS travel on the scene around it. The state itself
+       is never removed -- the disc still grows and the rim still shifts, just
+       without motion between stops. */
+    .fall-void-bg,
+    .fall-hand,
+    .fall-astronaut-stack,
+    .fall-timeline-fill,
+    .fall-timeline-head,
+    .fall-cue,
     .experience[data-scene="outcome"] .outcome-image,
     .experience[data-scene="outcome"] .outcome-headline,
     .experience[data-scene="outcome"] .outcome-stats,

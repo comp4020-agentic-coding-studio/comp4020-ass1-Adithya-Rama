@@ -26,6 +26,7 @@ import {
   MAX_FALL_PROGRESS,
 } from "../lib/fall-sim";
 import { withBase } from "../lib/base";
+import { createFallVoid } from "./fall-void";
 
 export function initExperience(): void {
   const root = document.querySelector<HTMLElement>('[data-testid="interaction-output"]');
@@ -59,6 +60,16 @@ export function initExperience(): void {
         panel.setAttribute("inert", "");
       }
     });
+
+    // The void renderer only runs while its own scene is on screen: a loop
+    // left spinning behind a hidden panel is wasted battery and, worse, a
+    // leaked animation frame that outlives the state it was drawing.
+    if (scene === "falling") {
+      fallVoid?.resize();
+      fallVoid?.start();
+    } else {
+      fallVoid?.stop();
+    }
 
     // Move focus into the new scene so keyboard and screen-reader users get
     // an explicit cue that the view changed -- nothing else announces it,
@@ -127,6 +138,27 @@ export function initExperience(): void {
   const ESCAPE_ATTEMPT_DURATION_MS = 1400;
   const ESCAPE_ATTEMPT_DURATION_MS_REDUCED = 400;
 
+  // -- input normalisation. A notched mouse wheel emits ~100px (or 3 lines) per
+  // click, a trackpad emits dozens of sub-pixel events per gesture, and a touch
+  // drag emits large movementY. Applied raw, one flick would cross most of the
+  // descent. So every source converts to a progress *intent*, is clamped
+  // per-event, and is then released through one per-frame budget -- which is
+  // also the only place these constants need tuning.
+  const WHEEL_PROGRESS_PER_PX = 0.00055;
+  const DRAG_PROGRESS_PER_PX = 0.0016;
+  const PAGE_STEP = 0.12;
+  const MAX_PROGRESS_PER_EVENT = 0.05;
+  const MAX_PROGRESS_PER_FRAME = 0.018;
+  const WHEEL_LINE_PX = 16;
+  const WHEEL_PAGE_PX = 400;
+  const MOTION_IDLE_MS = 420;
+
+  const fallScene = root.querySelector<HTMLElement>(".scene-falling");
+  const fallCanvas = root.querySelector<HTMLCanvasElement>("#fall-void");
+  const fallProgressBar = root.querySelector<HTMLElement>("#fall-progressbar");
+  const fallCue = root.querySelector<HTMLElement>("#fall-cue");
+  const fallVoid = fallCanvas ? createFallVoid(fallCanvas) : null;
+
   const descendControl = root.querySelector<HTMLButtonElement>("#descend-control");
   const fallHint = root.querySelector<HTMLElement>("#fall-hint");
   const fallStatus = root.querySelector<HTMLElement>("#fall-status");
@@ -193,6 +225,17 @@ export function initExperience(): void {
   let youClockIntervalId: ReturnType<typeof setInterval> | undefined;
   let crossingTimeoutId: ReturnType<typeof setTimeout> | undefined;
   let escapeTimeoutId: ReturnType<typeof setTimeout> | undefined;
+  let motionIdleTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  // The descent is reversible outside the horizon, but fall-sim.ts derives
+  // properTimeSeconds from *position* -- so a naive retreat would wind the
+  // infalling clock backwards, contradicting the model's own "proper time ticks
+  // steadily" claim. Retreating is thrusting outward, not time travel: the
+  // clock accumulates the magnitude of every move in either direction and
+  // therefore never decreases, while every position-derived readout (distance,
+  // redshift, signal, tidal stress) still tracks position exactly.
+  let properTimeElapsed = 0;
+  let lastProperTimeSeconds = 0;
 
   function startYouClockTicking(): void {
     if (youClockIntervalId !== undefined) return;
@@ -207,7 +250,10 @@ export function initExperience(): void {
     const metrics = computeFallMetrics(progress, getBlackHole());
     setFallProgress(metrics.progress);
 
-    if (fallClockYou) fallClockYou.textContent = formatClock(metrics.properTimeSeconds);
+    properTimeElapsed += Math.abs(metrics.properTimeSeconds - lastProperTimeSeconds);
+    lastProperTimeSeconds = metrics.properTimeSeconds;
+
+    if (fallClockYou) fallClockYou.textContent = formatClock(properTimeElapsed);
     if (fallClockEarth) fallClockEarth.textContent = formatClock(metrics.observedTimeSeconds);
     if (fallReadoutYou) {
       fallReadoutYou.textContent = `Conceptual distance to horizon: ${metrics.distanceToHorizonPercent}%`;
@@ -219,12 +265,23 @@ export function initExperience(): void {
       fallCaption.textContent = `Conceptual redshift ×${metrics.redshiftFactor.toFixed(1)} · Tidal stress: ${describeTidalStress(metrics.tidalStress)}`;
     }
 
+    root.style.setProperty("--fall-progress", String(metrics.progress));
     root.style.setProperty("--fall-lensing", String(metrics.lensingIntensity));
     root.style.setProperty("--fall-warmth", String(Math.min(1, (metrics.redshiftFactor - 1) / 3)));
     root.style.setProperty("--fall-brightness", String(metrics.observerBrightness));
     root.style.setProperty("--fall-motion-blur", `${(metrics.apparentVelocity * 2).toFixed(2)}px`);
+    fallVoid?.setProgress(metrics.progress);
 
-    youClockSeconds = metrics.properTimeSeconds;
+    if (fallProgressBar) {
+      const percent = Math.round((metrics.progress / MAX_FALL_PROGRESS) * 100);
+      fallProgressBar.setAttribute("aria-valuenow", String(percent));
+      fallProgressBar.setAttribute(
+        "aria-valuetext",
+        `${percent}% of the way to the event horizon`,
+      );
+    }
+
+    youClockSeconds = properTimeElapsed;
 
     const stage = metrics.progress >= HORIZON_ZONE_START ? "horizon" : "approach";
     timelineSteps.forEach((step) => {
@@ -320,6 +377,189 @@ export function initExperience(): void {
     stopHold();
   });
 
+  // -- continuous, direction-aware descent. Outside the horizon the visitor can
+  // both fall and pull back out; once it is crossed, every input below is
+  // refused. Position is never mapped from a scrub offset -- input expresses
+  // *intent to move*, which is what keeps this feeling like falling rather than
+  // dragging a playhead.
+  let motionDirection = 0;
+
+  function settleMotion(): void {
+    motionIdleTimeoutId = undefined;
+    motionDirection = 0;
+    if (!root) return;
+    delete root.dataset.descending;
+    if (fallStatus) {
+      fallStatus.textContent =
+        getFallProgress() >= MAX_FALL_PROGRESS ? "Holding at the threshold." : "Holding position.";
+    }
+  }
+
+  function moveDescent(delta: number): void {
+    if (!root) return;
+    if (crossing || crossed) return;
+    const from = getFallProgress();
+    const next = Math.min(Math.max(from + delta, 0), MAX_FALL_PROGRESS);
+    if (next === from) return;
+
+    renderFall(next);
+    const applied = next - from;
+    fallVoid?.noteMotion(applied);
+
+    // Announce the direction once per change, not once per frame -- #fall-status
+    // is aria-live, so a per-frame update would be a stream of chatter.
+    const direction = applied > 0 ? 1 : -1;
+    if (direction !== motionDirection) {
+      motionDirection = direction;
+      if (fallStatus) {
+        fallStatus.textContent =
+          direction > 0 ? "Descending." : "Pulling back away from the black hole.";
+      }
+    }
+    root.dataset.descending = direction > 0 ? "in" : "out";
+    if (fallCue) fallCue.dataset.seen = "true";
+
+    if (motionIdleTimeoutId !== undefined) clearTimeout(motionIdleTimeoutId);
+    motionIdleTimeoutId = setTimeout(settleMotion, MOTION_IDLE_MS);
+  }
+
+  let pendingDelta = 0;
+  let inputFrameHandle = 0;
+
+  function flushDescent(): void {
+    inputFrameHandle = 0;
+    if (pendingDelta === 0) return;
+    // Take a bounded bite this frame and carry the rest forward, so a burst of
+    // thirty trackpad events glides instead of teleporting.
+    const bite = Math.max(-MAX_PROGRESS_PER_FRAME, Math.min(MAX_PROGRESS_PER_FRAME, pendingDelta));
+    pendingDelta -= bite;
+    if (Math.abs(pendingDelta) < 0.0002) pendingDelta = 0;
+    moveDescent(bite);
+    if (pendingDelta !== 0) inputFrameHandle = requestAnimationFrame(flushDescent);
+  }
+
+  function queueDescent(delta: number): void {
+    if (crossing || crossed || delta === 0) return;
+    pendingDelta += Math.max(-MAX_PROGRESS_PER_EVENT, Math.min(MAX_PROGRESS_PER_EVENT, delta));
+    if (inputFrameHandle === 0) inputFrameHandle = requestAnimationFrame(flushDescent);
+  }
+
+  function cancelQueuedDescent(): void {
+    pendingDelta = 0;
+    if (inputFrameHandle !== 0) {
+      cancelAnimationFrame(inputFrameHandle);
+      inputFrameHandle = 0;
+    }
+  }
+
+  // Wheel and trackpad, anywhere in the cockpit. Safe to preventDefault now the
+  // falling scene no longer scrolls: there is nothing to scroll past.
+  fallScene?.addEventListener(
+    "wheel",
+    (event) => {
+      if (root.dataset.scene !== "falling") return;
+      if (crossing || crossed) return;
+      // Only hijack the wheel while the cockpit genuinely fits. It is laid out
+      // not to scroll at any supported size, but if some viewport ever made it
+      // overflow, swallowing the wheel would strand the visitor with content
+      // they can see and cannot reach.
+      if (fallScene.scrollHeight - fallScene.clientHeight > 1) return;
+      event.preventDefault();
+      const unit =
+        event.deltaMode === 1 ? WHEEL_LINE_PX : event.deltaMode === 2 ? WHEEL_PAGE_PX : 1;
+      queueDescent(event.deltaY * unit * WHEEL_PROGRESS_PER_PX);
+    },
+    { passive: false },
+  );
+
+  // Pointer drag on the void itself. The descend cue keeps its own
+  // pointerdown-hold, so the two gestures never contend for the same element.
+  let dragPointerId: number | null = null;
+  let dragLastY = 0;
+
+  fallCanvas?.addEventListener("pointerdown", (event) => {
+    if (crossing || crossed) return;
+    dragPointerId = event.pointerId;
+    dragLastY = event.clientY;
+    fallCanvas.setPointerCapture(event.pointerId);
+  });
+  fallCanvas?.addEventListener("pointermove", (event) => {
+    if (dragPointerId !== event.pointerId) return;
+    const dy = event.clientY - dragLastY;
+    dragLastY = event.clientY;
+    queueDescent(dy * DRAG_PROGRESS_PER_PX);
+  });
+  ["pointerup", "pointercancel"].forEach((name) => {
+    fallCanvas?.addEventListener(name, (event) => {
+      const pointerEvent = event as PointerEvent;
+      if (dragPointerId !== pointerEvent.pointerId) return;
+      dragPointerId = null;
+    });
+  });
+
+  // Retreating mirrors the hold-to-descend loop rather than reusing it, so the
+  // existing descend path keeps its exact behaviour and rate.
+  let retreating = false;
+  let retreatLastFrame: number | null = null;
+  let retreatHandle = 0;
+
+  function retreatStep(timestamp: number): void {
+    if (!retreating) return;
+    if (retreatLastFrame !== null) {
+      moveDescent((-(timestamp - retreatLastFrame) / 1000) * DESCEND_RATE_PER_SECOND);
+    }
+    retreatLastFrame = timestamp;
+    if (getFallProgress() <= 0) {
+      stopRetreat();
+      return;
+    }
+    retreatHandle = requestAnimationFrame(retreatStep);
+  }
+
+  function startRetreat(): void {
+    if (retreating || crossing || crossed || getFallProgress() <= 0) return;
+    retreating = true;
+    retreatLastFrame = null;
+    retreatHandle = requestAnimationFrame(retreatStep);
+  }
+
+  function stopRetreat(): void {
+    if (!retreating) return;
+    retreating = false;
+    cancelAnimationFrame(retreatHandle);
+    retreatHandle = 0;
+  }
+
+  window.addEventListener("keydown", (event) => {
+    if (root.dataset.scene !== "falling") return;
+    if (crossing || crossed) return;
+    if (event.code === "ArrowUp" || event.code === "KeyW") {
+      if (event.repeat) return;
+      event.preventDefault();
+      startRetreat();
+      return;
+    }
+    if (event.code === "PageDown") {
+      event.preventDefault();
+      queueDescent(PAGE_STEP);
+      return;
+    }
+    if (event.code === "PageUp") {
+      event.preventDefault();
+      queueDescent(-PAGE_STEP);
+    }
+  });
+  window.addEventListener("keyup", (event) => {
+    if (event.code !== "ArrowUp" && event.code !== "KeyW") return;
+    stopRetreat();
+  });
+
+  // Layout only: fallProgress lives in state.ts precisely so a resize can never
+  // disturb it (CLAUDE.md, Responsive invariant).
+  window.addEventListener("resize", () => {
+    fallVoid?.resize();
+  });
+
   // Crossing is a scripted, discrete event, not a continued function of
   // `progress` -- fall-sim.ts's formulas diverge as progress -> 1, so there
   // is no "progress = 1" to render. On the YOU side, deliberately nothing
@@ -338,6 +578,18 @@ export function initExperience(): void {
     });
 
     root.dataset.horizon = "crossing";
+    // Every continuous input is refused from here on -- past the horizon there
+    // is no retreating -- so cancel anything already queued or in flight.
+    cancelQueuedDescent();
+    stopRetreat();
+    stopHold();
+    if (motionIdleTimeoutId !== undefined) {
+      clearTimeout(motionIdleTimeoutId);
+      motionIdleTimeoutId = undefined;
+    }
+    motionDirection = 0;
+    delete root.dataset.descending;
+    fallVoid?.setPhase("crossing");
     if (descendControl) {
       descendControl.disabled = true;
       descendControl.textContent = "Crossing…";
@@ -375,12 +627,20 @@ export function initExperience(): void {
     crossing = false;
     crossed = true;
     root.dataset.horizon = "crossed";
+    // Inside: the eerie calm. The renderer stops the streaks and drift and
+    // settles into a near-still, deep-redshifted field.
+    fallVoid?.setPhase("crossed");
     cinematicTargets.forEach((el) => {
       el.style.transitionDuration = "";
     });
     if (descendControl) {
       descendControl.disabled = true;
       descendControl.textContent = "Beyond the horizon";
+    }
+    // The hint still read "press to cross the event horizon" from the threshold
+    // state, which is no longer true and no longer possible.
+    if (fallHint) {
+      fallHint.textContent = "Inside the horizon. There is no route back out.";
     }
     if (fallStatus) fallStatus.textContent = "Horizon crossed.";
     if (horizonCrossedPanel) {
@@ -583,6 +843,8 @@ export function initExperience(): void {
     holding = false;
     lastFrameTime = null;
     youClockSeconds = 0;
+    properTimeElapsed = 0;
+    lastProperTimeSeconds = 0;
     if (youClockIntervalId !== undefined) {
       clearInterval(youClockIntervalId);
       youClockIntervalId = undefined;
@@ -595,6 +857,18 @@ export function initExperience(): void {
       clearTimeout(escapeTimeoutId);
       escapeTimeoutId = undefined;
     }
+    if (motionIdleTimeoutId !== undefined) {
+      clearTimeout(motionIdleTimeoutId);
+      motionIdleTimeoutId = undefined;
+    }
+    motionDirection = 0;
+    cancelQueuedDescent();
+    stopRetreat();
+    // A reset must not leave the void loop running behind whatever scene the
+    // visitor lands on next.
+    fallVoid?.setPhase("approach");
+    fallVoid?.stop();
+    delete root.dataset.descending;
     delete root.dataset.horizon;
     cinematicTargets.forEach((el) => {
       el.style.transitionDuration = "";
@@ -609,13 +883,14 @@ export function initExperience(): void {
 
     if (descendControl) {
       descendControl.disabled = false;
-      descendControl.textContent = "Hold to descend";
+      descendControl.textContent = "Fall";
       descendControl.setAttribute("aria-pressed", "false");
     }
     if (fallHint) {
       fallHint.textContent =
-        "Hold the control below, or hold Arrow Down / S, to descend. Release to hold your position.";
+        "Scroll or drag to fall. Arrow Up / W pulls back out. Stop to hold your position.";
     }
+    if (fallCue) delete fallCue.dataset.seen;
     if (fallStatus) fallStatus.textContent = "";
     if (fallClockYou) fallClockYou.textContent = "00:00:00";
     if (fallClockEarth) fallClockEarth.textContent = "00:00:00";
