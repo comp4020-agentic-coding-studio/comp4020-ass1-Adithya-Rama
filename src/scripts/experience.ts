@@ -210,13 +210,13 @@ export function initExperience(): void {
     if (fallClockYou) fallClockYou.textContent = formatClock(metrics.properTimeSeconds);
     if (fallClockEarth) fallClockEarth.textContent = formatClock(metrics.observedTimeSeconds);
     if (fallReadoutYou) {
-      fallReadoutYou.textContent = `Distance to horizon: ${metrics.distanceToHorizonPercent}%`;
+      fallReadoutYou.textContent = `Conceptual distance to horizon: ${metrics.distanceToHorizonPercent}%`;
     }
     if (fallReadoutEarth) {
       fallReadoutEarth.textContent = `Signal: ${describeSignal(metrics.signalStrength)}`;
     }
     if (fallCaption) {
-      fallCaption.textContent = `Redshift ×${metrics.redshiftFactor.toFixed(1)} · Tidal stress: ${describeTidalStress(metrics.tidalStress)}`;
+      fallCaption.textContent = `Conceptual redshift ×${metrics.redshiftFactor.toFixed(1)} · Tidal stress: ${describeTidalStress(metrics.tidalStress)}`;
     }
 
     root.style.setProperty("--fall-lensing", String(metrics.lensingIntensity));
@@ -438,7 +438,7 @@ export function initExperience(): void {
       if (escapeAttempt) escapeAttempt.dataset.escape = "inevitable";
       if (escapeControl) escapeControl.textContent = "No route exists";
       if (escapeReadout) {
-        escapeReadout.textContent = "Thrust: exhausted · Local velocity: irrelevant";
+        escapeReadout.textContent = "Thrust: futile · Local velocity: irrelevant";
       }
       if (escapeCoreLine) escapeCoreLine.setAttribute("aria-hidden", "false");
       if (seeOutcomeButton) seeOutcomeButton.hidden = false;
@@ -619,9 +619,9 @@ export function initExperience(): void {
     if (fallStatus) fallStatus.textContent = "";
     if (fallClockYou) fallClockYou.textContent = "00:00:00";
     if (fallClockEarth) fallClockEarth.textContent = "00:00:00";
-    if (fallReadoutYou) fallReadoutYou.textContent = "Distance to horizon: 100%";
+    if (fallReadoutYou) fallReadoutYou.textContent = "Conceptual distance to horizon: 100%";
     if (fallReadoutEarth) fallReadoutEarth.textContent = "Signal: strong";
-    if (fallCaption) fallCaption.textContent = "Redshift ×1.0 · Tidal stress: mild";
+    if (fallCaption) fallCaption.textContent = "Conceptual redshift ×1.0 · Tidal stress: mild";
     timelineSteps.forEach((step) => {
       step.classList.remove("is-active", "is-complete");
       step.removeAttribute("aria-current");
