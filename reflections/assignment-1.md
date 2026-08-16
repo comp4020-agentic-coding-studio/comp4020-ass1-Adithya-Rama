@@ -1,34 +1,31 @@
-# Assignment 1 --- FALL
+# Assignment 1 — FALL
 
 ## What was the breakthrough that moved the work forward?
 
-For the first eleven scenes I built, the mobile layout was just the desktop
-layout, shrunk. The sync and fall stages carried a HUD readout (clocks,
-distance-to-horizon, signal status) *and* decorative illustration --- an
-astronaut's arm, a falling hand, a stacked-astronaut silhouette --- side by
-side, on the unexamined assumption that atmosphere mattered as much as the
-data.
+The breakthrough was a testable question: **if I removed the labels, could a
+visitor still identify the observer and the chosen black hole from what the
+experience does?** Before that, YOU and EARTH sat over almost the same moving
+image. Stellar and supermassive choices changed the ending text, yet both
+flows still let an intact astronaut cross the horizon and fire the engines.
+The interface was describing differences that its behaviour contradicted.
 
-A 390px viewport made that assumption impossible to keep denying: the phone
-reference in `assets/ref_images/` had no room for both. Forced to choose, I
-had the agent drop the decorative art on mobile entirely (`display: none` on
-`.sync-astronaut-arm`, `.fall-hand`, `.fall-astronaut-stack`) and rebuild
-sync/fall as a denser two-column grid of readouts instead
-([`1a84e36`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/1a84e36)).
-Nothing about the idea --- two clocks diverging, a signal dying in transit
---- was lost. If anything, the mobile version reads it faster: the
-illustration had never been carrying any of it.
-
-That's the breakthrough: the art was decoration, not explanation, and I
-hadn't noticed because desktop had room to hide the difference. It's still
-there on desktop today, undisturbed --- I haven't gone back to justify it the
-same way, which is the honest boundary of what actually changed.
+I stopped asking for more spectacle and asked the agent to encode the physics
+in the interaction. The infalling camera now reaches the horizon in finite
+proper time, while Earth's camera receives increasingly delayed, redder and
+fainter afterimages. The stellar path visibly breaks up before crossing and
+never exposes engine controls; the supermassive path crosses intact before
+showing that thrust cannot lead outward
+([`af5d43e`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/af5d43e)). I then made that insight durable: `CLAUDE.md` now says that labels
+are not viewpoints and requires browser tests for both the state that appears
+and the mutually exclusive state that must not
+([`d0a8809`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/d0a8809)).
 
 ## What did this work change about who I want to be as a developer?
 
-It reset how I direct the agent afterward. At the final visual-crit pass I
-told it explicitly not to add UI to fix a cosmetic-looking overlap, and
-instead of reaching for a decorative scrim it measured the real DOM and
-reported a false alarm. I'm learning to ask "does this change what a visitor
-understands" before "does this look good" --- of the model's suggestions, and
-of my own instructions to it.
+I want to be the developer who asks what an interaction is *arguing*, not only
+whether it looks impressive. With an agent, contradictory output can become
+polished very quickly, so my role is to expose the contradiction and turn it
+into an invariant and a test. I also want to keep the honest boundary visible:
+FALL is a conceptual model, and shared physics such as redshift, signal delay
+and the horizon's causal boundary should remain shared rather than being
+invented as differences for drama.
