@@ -224,6 +224,28 @@ The interaction --- what visibly changes when they act --- has to carry the
 explanation. Caption text may support what they're seeing; it may never be
 the only place the idea lives.
 
+## Perspective and branching invariant
+
+Viewpoint labels are not viewpoints. YOU and EARTH must differ in what their
+cameras can show and how those pictures change: the infalling view advances
+through the horizon in finite proper time, while the distant view receives
+progressively older, redder and fainter light. If removing the labels makes the
+two sides indistinguishable, the explanation has failed.
+
+Likewise, a choice that changes the visitor's physical fate must branch at its
+first visible consequence, not only on the final result card. The stellar-mass
+journey ends the intact observer in tidal breakup before the horizon; only the
+supermassive journey may show an intact horizon crossing and engine attempt.
+Do not invent differences in rules that are genuinely shared, such as redshift,
+signal delay and the horizon's causal boundary.
+
+Every fate branch needs a browser assertion for both what appears and what must
+not appear. A copy change is not sufficient evidence: assert the mutually
+exclusive state, control and visual (`tidal-breakup` versus
+`intact-crossing`). This rule was added after the stellar outcome claimed
+pre-horizon destruction while the shared flow still let that same astronaut
+cross intact and fire the engines.
+
 ## Visual quality
 
 `assets/ref_images/` is canonical. It is not moodboard inspiration to riff on
