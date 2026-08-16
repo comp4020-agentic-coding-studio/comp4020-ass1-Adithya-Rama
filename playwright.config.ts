@@ -12,6 +12,13 @@ export default defineConfig({
   testDir: "./e2e",
   testMatch: "**/*.e2e.ts",
   fullyParallel: true,
+  // These specs assert real-time behaviour of an animated canvas descent
+  // (streaks and drift respond to how fast the visitor actually moves), so they
+  // need CPU headroom to be deterministic. Playwright's default of one worker
+  // per core oversubscribes badly here -- every worker runs its own render
+  // loop -- and the suite flaked roughly one run in three. Capping workers is
+  // the honest fix; loosening the timing assertions would just hide it.
+  workers: process.env.CI ? 2 : 4,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",
   timeout: 45_000,

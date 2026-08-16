@@ -178,7 +178,7 @@ const supermassiveStats = [
         <section class="scene scene-falling" aria-hidden="true" inert>
           <h2>Falling</h2>
           <p class="scene-hint" id="fall-hint">
-            Scroll or drag to fall. Arrow Up / W pulls back out. Stop to hold your position.
+            Scroll or drag / Arrows move / Release pauses
           </p>
 
           <div class="viewpoint-control">
@@ -257,7 +257,7 @@ const supermassiveStats = [
                 aria-describedby="fall-hint"
                 aria-pressed="false"
               >
-                Fall
+                Scroll to fall
               </button>
               <span class="fall-cue-note" aria-hidden="true">Scroll · drag</span>
             </div>
@@ -898,12 +898,16 @@ const supermassiveStats = [
   }
 
   .experience[data-scene="falling"][data-lookback="true"] .fall-void-bg {
-    opacity: 0.12;
+    opacity: 0;
   }
 
   .experience[data-scene="falling"][data-lookback="true"] .fall-void {
     opacity: 0.35;
   }
+  .experience[data-scene="falling"][data-lookback="true"] .fall-void-stage::before {
+    animation: camera-turn-veil 900ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
 
   /* "Look back" is a viewpoint change on the persistent background layers,
      not a new scene -- toggling data-lookback off simply drops these
@@ -912,7 +916,7 @@ const supermassiveStats = [
      whose strength follows the same --fall-lensing progress driving the
      rest of the descent (see the hidden help text next to the toggle). */
   .experience[data-scene="falling"][data-lookback="true"] .hero-image {
-    animation: none;
+    animation: lookback-arrive 900ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
     opacity: 1;
     transform: scale(calc(1 + var(--fall-lensing, 0) * 0.6))
       translateX(calc(var(--fall-lensing, 0) * -8%));
@@ -939,7 +943,7 @@ const supermassiveStats = [
       "you header earth"
       "you centre earth"
       "foot foot   foot";
-    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) minmax(0, 17rem);
+    grid-template-columns: minmax(0, 19rem) minmax(0, 1fr) minmax(0, 19rem);
     grid-template-rows: auto minmax(0, 1fr) auto;
     align-items: start;
     justify-content: stretch;
@@ -979,7 +983,7 @@ const supermassiveStats = [
     grid-area: header;
     align-self: start;
     margin: 1.75rem 0 0;
-    font-size: var(--text-label);
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
     color: var(--color-text-dim);
     text-shadow: 0 1px 6px rgb(0 0 0 / 90%);
@@ -1013,6 +1017,35 @@ const supermassiveStats = [
     pointer-events: none;
   }
 
+  /* A camera turn and a horizon plunge need a full-frame transition layer;
+     otherwise both moments read as ordinary opacity swaps. */
+  .fall-void-stage::before,
+  .fall-void-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .fall-void-stage::before {
+    z-index: 3;
+    background:
+      linear-gradient(100deg, transparent 18%, rgb(190 225 255 / 22%) 48%, transparent 76%),
+      radial-gradient(circle at 50% 50%, transparent 10%, rgb(4 6 12 / 54%) 74%);
+    opacity: 0;
+    transform: translateX(-45%) skewX(-10deg);
+  }
+
+  .fall-void-stage::after {
+    z-index: 4;
+    background: radial-gradient(circle at 50% 50%, transparent 0 9%, rgb(0 0 0 / 20%) 24%, #000 72%);
+    opacity: 0;
+
+    /* Never below scale(1): the gradient is opaque past 72%, so a smaller box
+       shows its own corners as a rectangle (see @keyframes horizon-engulf). */
+    transform: scale(2.8);
+  }
+
   .fall-void-bg {
     position: absolute;
     inset: -6%;
@@ -1020,8 +1053,9 @@ const supermassiveStats = [
     height: 112%;
     object-fit: cover;
     opacity: 0;
-    transform: scale(calc(1 + var(--fall-progress, 0) * 0.55))
-      rotate(calc(var(--fall-progress, 0) * 4deg));
+    object-position: 50% 50%;
+    transform: scale(calc(0.9 + var(--fall-progress, 0) * 0.72))
+      rotate(calc(var(--fall-progress, 0) * 2deg));
     filter: saturate(calc(1 + var(--fall-progress, 0) * 0.5))
       brightness(calc(1 - var(--fall-progress, 0) * 0.2))
       hue-rotate(calc(var(--fall-progress, 0) * 10deg));
@@ -1032,7 +1066,24 @@ const supermassiveStats = [
   }
 
   .experience[data-scene="falling"] .fall-void-bg {
-    opacity: 0.92;
+    opacity: calc(0.78 + var(--fall-progress, 0) * 0.2);
+  }
+
+  .experience[data-horizon="crossing"] .fall-void-bg {
+    animation: horizon-plunge 3.2s cubic-bezier(0.3, 0, 0.1, 1) both;
+  }
+
+  .experience[data-horizon="crossing"] .fall-void-stage::after {
+    animation: horizon-engulf 3.2s cubic-bezier(0.45, 0, 0.12, 1) both;
+  }
+
+  .experience[data-horizon="crossing"] .fall-void {
+    animation: void-flare 3.2s ease-in both;
+  }
+
+  .experience[data-horizon="crossed"] .fall-void-stage::after {
+    opacity: 0.34;
+    transform: scale(1);
   }
 
   /* The canvas is the movement (see src/scripts/fall-void.ts); the image above
@@ -1089,10 +1140,12 @@ const supermassiveStats = [
 
   .fall-cue-button {
     border-color: var(--color-you-dim);
-    background: rgb(5 7 12 / 45%);
+    background: rgb(5 7 12 / 64%);
     color: var(--color-you-strong);
-    font-size: var(--text-label);
-    letter-spacing: 0.24em;
+    min-width: 10rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    box-shadow: 0 0 0 1px rgb(100 220 255 / 8%), 0 0 28px rgb(60 190 255 / 10%);
   }
 
   .fall-cue-button:hover,
@@ -1102,7 +1155,7 @@ const supermassiveStats = [
   }
 
   .fall-cue-note {
-    font-size: var(--text-label);
+    font-size: 0.68rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--color-text-dim);
@@ -1140,21 +1193,21 @@ const supermassiveStats = [
     align-items: flex-start;
     gap: var(--space-2xs);
     width: 100%;
-    padding: var(--space-2xs) var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
     text-align: left;
   }
 
   .fall-side-you {
     grid-area: you;
     border-left: 2px solid var(--color-you-dim);
-    background: linear-gradient(to right, rgb(5 7 12 / 55%), transparent);
+    background: linear-gradient(to right, rgb(5 7 12 / 76%), rgb(5 7 12 / 18%) 78%, transparent);
   }
 
   .fall-side-earth {
     grid-area: earth;
     align-items: flex-end;
     border-right: 2px solid var(--color-earth-dim);
-    background: linear-gradient(to left, rgb(5 7 12 / 55%), transparent);
+    background: linear-gradient(to left, rgb(5 7 12 / 76%), rgb(5 7 12 / 18%) 78%, transparent);
     text-align: right;
   }
 
@@ -1179,7 +1232,7 @@ const supermassiveStats = [
     padding-top: var(--space-2xs);
     border-top: var(--border-hairline);
     width: 100%;
-    font-size: var(--text-small);
+    font-size: 0.78rem;
     color: var(--color-text-dim);
   }
 
@@ -1308,7 +1361,8 @@ const supermassiveStats = [
     padding: var(--space-md) var(--space-lg);
     border-top: 1px solid var(--color-danger);
     border-bottom: 1px solid var(--color-danger);
-    background: linear-gradient(rgb(5 7 12 / 72%), rgb(5 7 12 / 72%));
+    background: linear-gradient(rgb(5 7 12 / 86%), rgb(5 7 12 / 72%));
+    backdrop-filter: blur(14px);
     overflow: hidden;
     text-align: center;
     opacity: 0;
@@ -2009,6 +2063,145 @@ const supermassiveStats = [
     animation: result-reveal 0.55s var(--ease-standard) 0.38s both;
   }
 
+  @keyframes horizon-plunge-mobile {
+    0% {
+      opacity: 0.98;
+      transform: translate(-50%, -50%) scale(1.46);
+      filter: saturate(1.45) brightness(0.82);
+    }
+
+    34% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.9);
+      filter: saturate(1.8) brightness(1.16);
+    }
+
+    70% {
+      opacity: 0.72;
+      transform: translate(-50%, -50%) scale(3.3);
+      filter: saturate(1.15) brightness(0.68) blur(2px);
+    }
+
+    100% {
+      opacity: 0.14;
+      transform: translate(-50%, -50%) scale(6);
+      filter: saturate(0.45) brightness(0.18) blur(8px);
+    }
+  }
+
+  @keyframes lookback-arrive {
+    0% {
+      opacity: 0;
+      transform: scale(1.32) translateX(16%) rotate(3deg);
+      filter: blur(20px) saturate(0.45) brightness(1.4);
+    }
+
+    48% {
+      opacity: 0.45;
+      filter: blur(10px) saturate(1.25) brightness(1.12);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(calc(1 + var(--fall-lensing, 0) * 0.6))
+        translateX(calc(var(--fall-lensing, 0) * -8%));
+      filter: blur(calc(var(--fall-lensing, 0) * 2px)) saturate(calc(1 + var(--fall-lensing, 0) * 0.5));
+    }
+  }
+
+  @keyframes horizon-plunge {
+    0% {
+      opacity: 0.98;
+      transform: scale(1.57) rotate(2deg);
+      filter: saturate(1.45) brightness(0.82);
+    }
+
+    34% {
+      opacity: 1;
+      transform: scale(1.92) rotate(3deg);
+      filter: saturate(1.8) brightness(1.16);
+    }
+
+    70% {
+      opacity: 0.72;
+      transform: scale(3.4) rotate(5deg);
+      filter: saturate(1.15) brightness(0.68) blur(2px);
+    }
+
+    100% {
+      opacity: 0.14;
+      transform: scale(6.2) rotate(7deg);
+      filter: saturate(0.45) brightness(0.18) blur(8px);
+    }
+  }
+
+  /* The veil collapses inward instead of growing outward, and never drops below
+     scale(1). Its gradient is opaque #000 past 72%, so any scale under 1 leaves
+     the element's own box corners painting a hard-edged rectangle across the
+     frame -- clearly visible mid-plunge. Ending on scale(1) also matches the
+     [data-horizon="crossed"] rule below, so the animation hands over without a
+     jump. */
+  @keyframes horizon-engulf {
+    0% {
+      opacity: 0;
+      transform: scale(2.8);
+    }
+
+    36% {
+      opacity: 0.35;
+      transform: scale(2.1);
+    }
+
+    72% {
+      opacity: 0.85;
+      transform: scale(1.35);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes void-flare {
+    0%,
+    28% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+
+    48% {
+      opacity: 1;
+      filter: brightness(2.15);
+    }
+
+    82% {
+      opacity: 0.3;
+      filter: brightness(0.4);
+    }
+
+    100% {
+      opacity: 0.08;
+      filter: brightness(0.18);
+    }
+  }
+
+  @keyframes camera-turn-veil {
+    0% {
+      opacity: 0;
+      transform: translateX(-45%) skewX(-10deg);
+    }
+
+    46% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+      transform: translateX(55%) skewX(-10deg);
+    }
+  }
+
   @keyframes hero-drift {
     from {
       transform: scale(1.04) translate(0, 0);
@@ -2206,24 +2399,28 @@ const supermassiveStats = [
         "foot   foot";
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       grid-template-rows: auto auto minmax(0, 1fr) auto;
-      padding: var(--space-xl) var(--space-sm) var(--space-2xs);
+      padding: 4rem var(--space-sm) var(--space-2xs);
     }
 
     .scene-falling > .scene-hint {
-      margin-top: 1.4rem;
+      margin-top: 1.2rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.02em;
     }
 
     .scene-falling > .viewpoint-control {
-      margin-top: 3.6rem;
+      margin-top: 2.85rem;
     }
 
     .fall-side {
-      padding: var(--space-2xs) var(--space-xs);
+      padding: 0.4rem 0.65rem;
     }
 
     .fall-hand {
-      width: 12rem;
-      opacity: 0.4;
+      bottom: 5.25rem;
+      left: -2rem;
+      width: 10rem;
+      opacity: 0.24;
     }
 
     .fall-astronaut-stack {
@@ -2231,15 +2428,15 @@ const supermassiveStats = [
     }
 
     .fall-clock {
-      font-size: 1.35rem;
+      font-size: 1.15rem;
     }
 
     .fall-readout {
-      font-size: var(--text-label);
+      font-size: 0.68rem;
     }
 
     .signal-track {
-      width: 72vw;
+      width: 62vw;
       height: 2px;
     }
 
@@ -2251,7 +2448,9 @@ const supermassiveStats = [
     }
 
     .signal-panel {
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
       gap: var(--space-2xs);
       padding: var(--space-2xs) 0 0;
     }
@@ -2272,21 +2471,84 @@ const supermassiveStats = [
     .fall-timeline-steps {
       grid-column: 1;
       gap: var(--space-2xs);
-      font-size: 0.625rem;
+      font-size: 0.55rem;
     }
 
     .signal-stats {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-3xs) var(--space-sm);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-3xs);
     }
 
     .signal-stat dt {
       font-size: 0.625rem;
     }
 
+    .scene-falling > h2 {
+      font-size: 0.68rem;
+    }
+
+    .scene-falling > .viewpoint-control .btn {
+      min-height: 2.25rem;
+      padding: 0.45rem 1rem;
+      font-size: 0.68rem;
+    }
+
+    .fall-void-bg {
+      inset: auto;
+      top: 52%;
+      left: 50%;
+      width: 150vw;
+      height: auto;
+      max-width: none;
+      transform: translate(-50%, -50%)
+        scale(calc(0.76 + var(--fall-progress, 0) * 0.74));
+    }
+
+    .experience[data-horizon="crossing"] .fall-void-bg {
+      animation-name: horizon-plunge-mobile;
+    }
+
+    .fall-caption,
+    .fall-timeline-label,
+    .signal-stat:nth-child(1),
+    .signal-stat:nth-child(3) {
+      display: none;
+    }
+
+    .fall-foot {
+      gap: 0.2rem;
+    }
+
+    .fall-cue-button {
+      min-width: 8.75rem;
+      padding: 0.65rem 0.85rem;
+    }
+
+    .fall-cue-note {
+      font-size: 0.6rem;
+    }
+
+    .signal-stat dt {
+      font-size: 0.52rem;
+    }
+
     .signal-stat dd {
-      font-size: var(--text-label);
+      font-size: 0.62rem;
+    }
+
+    .signal-send {
+      padding: 0.55rem 0.7rem;
+      font-size: 0.6rem;
+    }
+
+    .horizon-banner {
+      top: 35%;
+      width: 92vw;
+    }
+
+    .horizon-banner-title {
+      font-size: 1.25rem;
     }
 
     /* Grid tracks (not flex + fixed max-width) are what keep this from
@@ -2352,6 +2614,9 @@ const supermassiveStats = [
        is never removed -- the disc still grows and the rim still shifts, just
        without motion between stops. */
     .fall-void-bg,
+    .fall-void,
+    .fall-void-stage::before,
+    .fall-void-stage::after,
     .fall-hand,
     .fall-astronaut-stack,
     .fall-timeline-fill,

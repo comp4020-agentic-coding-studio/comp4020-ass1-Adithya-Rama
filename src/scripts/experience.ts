@@ -361,7 +361,7 @@ export function initExperience(): void {
     event.preventDefault();
     startHold();
   });
-  ["pointerup", "pointercancel", "pointerleave"].forEach((name) => {
+  ["pointerup", "pointercancel"].forEach((name) => {
     descendControl?.addEventListener(name, () => stopHold());
   });
 
@@ -883,12 +883,12 @@ export function initExperience(): void {
 
     if (descendControl) {
       descendControl.disabled = false;
-      descendControl.textContent = "Fall";
+      descendControl.textContent = "Scroll to fall";
       descendControl.setAttribute("aria-pressed", "false");
     }
     if (fallHint) {
       fallHint.textContent =
-        "Scroll or drag to fall. Arrow Up / W pulls back out. Stop to hold your position.";
+        "Scroll or drag / Arrows move / Release pauses";
     }
     if (fallCue) delete fallCue.dataset.seen;
     if (fallStatus) fallStatus.textContent = "";

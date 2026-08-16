@@ -163,13 +163,13 @@ export function createFallVoid(canvas: HTMLCanvasElement): FallVoid {
    * progress, which is what makes "the hole is getting closer" measurable.
    */
   function discRadius(): number {
-    // Sized to sit *on* the backdrop's own hole rather than cover the accretion
-    // imagery: the streaks and disc are the thing worth looking at, and an
-    // over-large black fill simply hides them. It still roughly doubles across
-    // the descent, which is what makes the approach measurable.
-    const base = shortEdge * 0.1;
-    const grown = base * (1 + progress * 1.25);
-    return phase === "crossed" ? grown * 1.12 : grown;
+    // Keep the procedural shadow inside the photographed event horizon. The
+    // previous radius grew beyond the image's rim and became a visibly pasted
+    // black circle near p=.94. The background zoom now sells proximity; this
+    // shadow only deepens the existing void and occludes lensed stars.
+    const base = shortEdge * 0.072;
+    const grown = base * (1 + progress * 1.35);
+    return phase === "crossed" ? grown * 1.08 : grown;
   }
 
   /** 0 at rest, 1 at a brisk descent; drives streak length and dust speed. */
@@ -220,7 +220,9 @@ export function createFallVoid(canvas: HTMLCanvasElement): FallVoid {
     context.globalCompositeOperation = "lighter";
 
     layers.forEach((layer) => {
-      const streakScale = (speed * 0.55 + progress * 0.22 + flare * 1.1) * layer.depth;
+      // Trails express motion, not position. A paused visitor should see bent
+      // stars settle back to points instead of permanent warp-speed lines.
+      const streakScale = (speed * 0.72 + flare * 1.15) * layer.depth;
       for (const star of layer.stars) {
         const bent = lens(star.radius, lensStrength);
         const angle = star.angle + bent.sweep;
@@ -331,15 +333,14 @@ export function createFallVoid(canvas: HTMLCanvasElement): FallVoid {
       context.stroke();
     }
 
-    // The hole itself, last: it occludes what is behind it and deepens as the
-    // descent proceeds. Its darkness ramps with progress rather than starting
-    // opaque, so early on the backdrop's own rim glow still shows through
-    // instead of being replaced by a flat black blob.
+    // A soft inner shadow, not a replacement black hole. It stays translucent
+    // enough that the photographed accretion rim remains visible right up to
+    // the crossing; the full-frame engulf is handled as a camera move in CSS.
     context.globalCompositeOperation = "source-over";
-    const core = Math.min(1, 0.3 + progress * 0.78);
-    const holeGradient = context.createRadialGradient(cx, cy, disc * 0.45, cx, cy, disc * 1.2);
+    const core = Math.min(0.72, 0.16 + progress * 0.42 + flare * 0.16);
+    const holeGradient = context.createRadialGradient(cx, cy, disc * 0.22, cx, cy, disc * 1.12);
     holeGradient.addColorStop(0, `rgba(0,0,0,${core.toFixed(3)})`);
-    holeGradient.addColorStop(0.7, `rgba(0,0,0,${(core * 0.92).toFixed(3)})`);
+    holeGradient.addColorStop(0.58, `rgba(0,0,0,${(core * 0.72).toFixed(3)})`);
     holeGradient.addColorStop(1, "rgba(0,0,0,0)");
     context.fillStyle = holeGradient;
     context.beginPath();
@@ -368,10 +369,10 @@ export function createFallVoid(canvas: HTMLCanvasElement): FallVoid {
     }
 
     // Stars sweep outward as you fall inward (and inward as you retreat), at a
-    // rate set by how fast the visitor is actually moving plus a slow baseline
-    // so the scene is never dead.
+    // rate set by actual visitor motion plus the crossing flare. At rest the
+    // field settles, matching the instruction that release pauses the fall.
     const flare = crossingFlare();
-    const drift = (velocity * 1.15 + Math.sign(velocity || 1) * 0.006 + flare * 0.5) * deltaSeconds;
+    const drift = (velocity * 1.15 + flare * 0.5) * deltaSeconds;
     layers.forEach((layer) => {
       for (const star of layer.stars) {
         star.radius += drift * layer.depth * (0.55 + star.radius * 0.8);
