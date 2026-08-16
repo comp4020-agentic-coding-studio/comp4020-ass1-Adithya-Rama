@@ -1,83 +1,64 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and each brief adds its own word count and moment count.
-
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+FALL is a single-page visualisation of falling into a black hole, told twice:
+once as YOU (infalling) and once as EARTH (observing) --- diverging clocks, a
+signal that redshifts into silence before it arrives, and a closing comparison
+of a stellar vs. a supermassive black hole's tidal survivability. It's
+scripted interaction state, not a physics engine: the idea has to live in what
+visibly changes when a visitor acts, not in a paragraph next to it.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+**Timer corruption became a lifecycle rule, not a re-prompt.** An edge-case
+sweep --- rapid clicks, resize mid-animation, crossing the horizon while a
+signal was in flight, replaying repeatedly --- found that `beginCrossing()`
+never cancelled a pending `sendSignal()` timeout. Cross the horizon before a
+signal resolves, and the stale callback still fires later, silently
+re-enabling the send button and overwriting "Signal: lost" with an in-transit
+result. The obvious fix was patching that one call site. Instead I had the
+agent notice that `sendSignal()` already tracked its own timeout correctly
+(`signalTimeoutId`) and generalise that into a standing `CLAUDE.md` rule:
+every scripted-transition timer gets a handle, cancelled by every path that
+can pre-empt it, not just reset. `src/scripts/experience.ts`, `CLAUDE.md`
+([`eb9bb71...6a99280`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/compare/eb9bb71...6a99280)).
+I knew it held because the fix later earned a permanent regression test
+rather than a one-off manual check: `e2e/core-contract.e2e.ts`, wired into
+`pnpm check` and CI
+([`52148ef`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/52148ef)).
 
-1. **what happened** --- the problem, or the thing the agent got wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+**Mobile got rebuilt, not shrunk.** The first mobile pass was a media query
+scaling desktop styles down. It didn't match the phone reference image, and
+it had a real bug: a fixed `max-width` on `.comparison-detail` could exceed a
+390px viewport. Rather than patch the breakpoint again, I had the agent
+discard the shrink-desktop assumption and rebuild the sync/fall stages as
+condensed two-column grids matching the reference.
+`src/pages/index.astro`
+([`1a84e36`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/1a84e36)).
+Verified with a temporary Playwright driver across all seven touchpoints at
+390x844 and 1920x1080: no horizontal overflow, and simulation state survives
+a resize mid-fall --- the existing Responsive invariant in `CLAUDE.md`.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** rather than in another prompt --- a rule added to
-`CLAUDE.md`, a check wired up, an attempt thrown away: re-prompting until it
-passes is the routine case, and changing what the agent works against is the
-skilled one.
+**A reduced-motion bug that only a real audit would surface.** `.sync-clock`
+and `.sync-connector-pulse` had `prefers-reduced-motion` overrides, but the
+animations were actually declared under the higher-specificity
+`.sync-stage.synced .sync-clock` rule, so the plain-class override silently
+lost and both kept animating with reduced motion on.
+`src/pages/index.astro`
+([`e3f09ee`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/e3f09ee)).
+I only found this by auditing every animated touchpoint against the Motion
+invariant rather than trusting that a global override block worked as
+written; the fix matches the selector that actually wins, with a comment
+explaining why the bare class wasn't enough.
 
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
-
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
-
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
-
-> the prompt, verbatim
-
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
-
-### A worked moment, for shape
-
-Delete this section along with the rest of the boilerplate --- it's here to show
-the four jobs in one paragraph, not to be imitated in content.
-
-> The date formatter kept coming back with `toLocaleDateString()` and no locale
-> argument, so the same build rendered differently on my machine and in CI. I'd
-> already re-prompted it twice, which fixed the line but not the habit, so the
-> third time I put the rule in `CLAUDE.md` instead
-> ([`3f9ac21`](https://github.com/YOUR-ORG/YOUR-REPO/commit/3f9ac21)) and added
-> a spec test that fails on a bare `toLocaleDateString`. That's what told me it
-> had actually taken: the test went red against the old code and green against
-> the new, and the next two features it wrote passed it without prompting
-> ([`3f9ac21...b7e0d14`](https://github.com/YOUR-ORG/YOUR-REPO/compare/3f9ac21...b7e0d14)).
-
-## Before you ship
-
-`pnpm check:evidence` verifies your citations resolve to real commits, that the
-current reflection entry is in `reflections/`, and that your `CLAUDE.md` is
-there --- before a marker ever opens the file. It checks that your map is
-traceable, not that it is good: the marker judges whether your small,
-deliberately chosen set of moments shows real judgement and reflection. A green
-check is not a substitute for that curation.
-
-Images are deliberately not checked, because whether one renders is visible the
-moment you look. Open this file on GitHub and look at it before you ship.
+**Scientific honesty caught its own blind spot.** A dedicated audit against
+`CLAUDE.md`'s Scientific-honesty rule found two live readouts --- distance to
+horizon, redshift multiplier --- displaying bare numbers with no hedge, unlike
+every other numeric display in the app. It also found "Thrust: exhausted"
+implying a fixable fuel budget where the point is that escape is impossible.
+`src/pages/index.astro`, `src/scripts/experience.ts`
+([`9afb8bc`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/9afb8bc)).
+I trusted the result because the audit was run against all eight of the
+brief's stated principles and reported which ones needed no change, not just
+the ones that did.
