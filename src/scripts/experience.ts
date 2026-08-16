@@ -191,6 +191,8 @@ export function initExperience(): void {
   let escapeAttempted = false;
   let youClockSeconds = 0;
   let youClockIntervalId: ReturnType<typeof setInterval> | undefined;
+  let crossingTimeoutId: ReturnType<typeof setTimeout> | undefined;
+  let escapeTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
   function startYouClockTicking(): void {
     if (youClockIntervalId !== undefined) return;
@@ -347,7 +349,25 @@ export function initExperience(): void {
     root.style.setProperty("--fall-motion-blur", "2.5px");
     if (fallStatus) fallStatus.textContent = "Crossing the event horizon.";
 
-    setTimeout(finishCrossing, duration);
+    // A signal already in flight has nowhere left to arrive -- resolve it as
+    // lost now rather than letting its own timeout land later and silently
+    // re-enable the send button / overwrite "Signal: lost" with a stale
+    // in-transit result.
+    if (signalTimeoutId !== undefined) {
+      clearTimeout(signalTimeoutId);
+      signalTimeoutId = undefined;
+      signalSending = false;
+      if (signalOutgoing) signalOutgoing.textContent = "Lost";
+      if (signalObserved) signalObserved.textContent = "Lost — horizon crossed mid-transit";
+      if (signalReceived) signalReceived.textContent = "Never arrives";
+      if (signalStatus) signalStatus.textContent = "Signal lost: the horizon was crossed before it arrived.";
+      signalPulse?.classList.remove("is-armed", "is-arriving");
+    }
+
+    crossingTimeoutId = setTimeout(() => {
+      crossingTimeoutId = undefined;
+      finishCrossing();
+    }, duration);
   }
 
   function finishCrossing(): void {
@@ -411,7 +431,8 @@ export function initExperience(): void {
     if (escapeReadout) escapeReadout.textContent = "Thrust: firing · Local velocity: rising";
     if (fallStatus) fallStatus.textContent = "Attempting escape. Engines firing.";
 
-    setTimeout(() => {
+    escapeTimeoutId = setTimeout(() => {
+      escapeTimeoutId = undefined;
       escaping = false;
       escapeAttempted = true;
       if (escapeAttempt) escapeAttempt.dataset.escape = "inevitable";
@@ -565,6 +586,14 @@ export function initExperience(): void {
     if (youClockIntervalId !== undefined) {
       clearInterval(youClockIntervalId);
       youClockIntervalId = undefined;
+    }
+    if (crossingTimeoutId !== undefined) {
+      clearTimeout(crossingTimeoutId);
+      crossingTimeoutId = undefined;
+    }
+    if (escapeTimeoutId !== undefined) {
+      clearTimeout(escapeTimeoutId);
+      escapeTimeoutId = undefined;
     }
     delete root.dataset.horizon;
     cinematicTargets.forEach((el) => {
