@@ -31,7 +31,7 @@ const statsId = `${id}-stats`;
     aria-describedby={statsId}
   />
   <span class="blackhole-option-card">
-    <img class="blackhole-option-image" src={withBase(image)} alt={alt} loading="lazy" />
+    <img class="blackhole-option-image" src={withBase(image)} alt={alt} loading="lazy" decoding="async" />
     <span class="blackhole-option-name">{title}</span>
     <dl class="blackhole-option-stats" id={statsId}>
       {

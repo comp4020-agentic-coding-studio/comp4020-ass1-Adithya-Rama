@@ -31,6 +31,14 @@ const supermassiveStats = [
       name="description"
       content="An interactive explainer of gravitational time dilation: an infalling astronaut and a distant Earth observer share one event and never agree on how long it took."
     />
+    <link
+      rel="preload"
+      as="image"
+      href={withBase("img/blackhole-split-earth.webp")}
+      imagesrcset={`${withBase("img/blackhole-split-earth-sm.webp")} 900w, ${withBase("img/blackhole-split-earth.webp")} 1920w`}
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
   </head>
   <body>
     <div class="experience" data-scene="hero" data-testid="interaction-output">
@@ -42,8 +50,11 @@ const supermassiveStats = [
         <img
           class="hero-image"
           src={withBase("img/blackhole-split-earth.webp")}
+          srcset={`${withBase("img/blackhole-split-earth-sm.webp")} 900w, ${withBase("img/blackhole-split-earth.webp")} 1920w`}
+          sizes="100vw"
           alt="A black hole splitting starlight into a cyan stream on one side and an amber stream on the other, with Earth visible in the distance"
           fetchpriority="high"
+          decoding="async"
         />
         <div class="gravity-glow" aria-hidden="true"></div>
         <div class="split-line" aria-hidden="true"></div>
@@ -129,6 +140,7 @@ const supermassiveStats = [
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
+                decoding="async"
               />
               <span class="sync-label">You</span>
               <span class="sync-clock" id="clock-you">--:--:--</span>
@@ -196,6 +208,7 @@ const supermassiveStats = [
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
+                decoding="async"
               />
               <span class="sync-label">You</span>
               <span class="fall-clock" id="fall-clock-you">00:00:00</span>
@@ -215,6 +228,7 @@ const supermassiveStats = [
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
+                  decoding="async"
                 />
                 <img
                   class="fall-astronaut fall-astronaut-warm"
@@ -222,6 +236,7 @@ const supermassiveStats = [
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
               <span class="sync-label">Earth observer</span>
@@ -244,6 +259,7 @@ const supermassiveStats = [
               alt=""
               aria-hidden="true"
               loading="lazy"
+              decoding="async"
             />
             <h3 class="horizon-crossed-heading" id="horizon-crossed-heading">Horizon crossed</h3>
             <p class="horizon-you-copy">
@@ -308,6 +324,7 @@ const supermassiveStats = [
               alt=""
               aria-hidden="true"
               loading="lazy"
+              decoding="async"
             />
             <dl class="signal-stats">
               <div class="signal-stat">
@@ -357,7 +374,14 @@ const supermassiveStats = [
           <h2>Tidal forces</h2>
           <p class="scene-question">Different black holes. Different fates.</p>
 
-          <img class="outcome-image" id="outcome-image" src={withBase("img/astronaut-spaghetti.webp")} alt="" />
+          <img
+            class="outcome-image"
+            id="outcome-image"
+            src={withBase("img/astronaut-spaghetti.webp")}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
 
           <p class="outcome-headline" id="outcome-headline"></p>
 
@@ -402,6 +426,8 @@ const supermassiveStats = [
                 class="comparison-image"
                 src={withBase("img/astronaut-spaghetti.webp")}
                 alt="An astronaut stretched into an extreme thread by severe tidal forces"
+                loading="lazy"
+                decoding="async"
               />
               <p class="comparison-label">Stellar</p>
               <p class="comparison-detail">Smaller horizon · stronger tidal gradient</p>
@@ -411,6 +437,8 @@ const supermassiveStats = [
                 class="comparison-image"
                 src={withBase("img/astronaut-reach-warm.webp")}
                 alt="An astronaut mildly stretched by comparatively gentle tidal forces"
+                loading="lazy"
+                decoding="async"
               />
               <p class="comparison-label">Supermassive</p>
               <p class="comparison-detail">Larger horizon · weaker gradient at the horizon</p>
