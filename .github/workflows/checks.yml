@@ -44,7 +44,17 @@ jobs:
         if: ${{ !github.event.repository.is_template }}
         run: pnpm check:evidence
       - name: Check internal links
-        run: pnpm dlx linkinator ./dist --silent
+        # Pages serves this site under /<repo>/, so astro.config.mjs sets `base`
+        # and every built link carries that prefix. Crawling ./dist directly
+        # resolves /<repo>/img/x.webp against dist/ itself, so all 14 assets
+        # 404 even though the deployed site is fine. Stage the build under its
+        # own base path and serve the parent, so the crawl sees the same URLs
+        # GitHub Pages does. The location is relative to --server-root.
+        run: |
+          base="${{ github.event.repository.name }}"
+          mkdir -p linkcheck
+          cp -r dist "linkcheck/$base"
+          pnpm dlx linkinator "$base" --server-root linkcheck --silent
       - name: Scan for committed secrets
         # Pinned, both halves: the SHA fixes the action's script, and `version`
         # fixes the scanner image, which otherwise floats on :latest. These two
