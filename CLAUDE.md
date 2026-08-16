@@ -338,3 +338,29 @@ untested.
   in-transit result. The fix is always the same shape: give the timer its
   own handle, and cancel-and-resolve it from the state that pre-empts it,
   not just from a full reset.
+- The same rule covers `requestAnimationFrame` loops: a render loop must be
+  stored in a handle, started only while the scene that needs it is on
+  screen, and cancelled on scene change *and* every reset path. A loop left
+  running behind a hidden panel is wasted battery and a renderer outliving
+  the state it was drawing.
+- Hiding a state-conditional panel with `opacity: 0` alone does **not** remove
+  it from layout --- it still reserves its full box, and in a flex/grid column
+  its siblings' gaps stack around that reserved space. Hide such panels by
+  taking them out of flow (a positioned overlay, or `display: none`), not by
+  fading them. Found during the cinematic-descent redesign: the falling
+  scene's `.horizon-banner`, `.horizon-crossed-panel` and `.escape-attempt`
+  were all `opacity: 0` for most of a run, and between them reserved roughly
+  400--600px of invisible height (the escape panel alone is a 12rem SVG cone
+  plus a two-button row). That, not spacing, was the "large dead gap" between
+  the readouts and the controls, and it pushed the descent control below the
+  fold on a 1080p viewport.
+- A visitor-driven simulation value must be moved by *input intent*, never
+  mapped from a pointer or scroll offset. Wheel, trackpad, touch drag and keys
+  all emit wildly different magnitudes (a notched wheel ~100px or 3 lines per
+  click; a trackpad dozens of sub-pixel events per gesture), so normalise each
+  source to a common unit, clamp per event, and release through a single
+  per-frame budget. Without that clamp one flick crosses the whole range;
+  without the shared funnel each input needs its own tuning and they drift
+  apart. Position-mapping also changes what the interaction *means*: a
+  playhead invites scrubbing, where an intent-driven control reads as
+  travelling.
