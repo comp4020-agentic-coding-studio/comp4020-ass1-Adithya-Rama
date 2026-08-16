@@ -17,14 +17,23 @@ interface Props {
 
 const { value, name, image, alt, title, stats } = Astro.props;
 const id = `blackhole-${value}`;
+const statsId = `${id}-stats`;
 ---
 
 <label class={`blackhole-option blackhole-option-${value}`} for={id}>
-  <input type="radio" name={name} id={id} value={value} class="blackhole-option-input" />
+  <input
+    type="radio"
+    name={name}
+    id={id}
+    value={value}
+    class="blackhole-option-input"
+    aria-label={title}
+    aria-describedby={statsId}
+  />
   <span class="blackhole-option-card">
     <img class="blackhole-option-image" src={withBase(image)} alt={alt} loading="lazy" />
     <span class="blackhole-option-name">{title}</span>
-    <dl class="blackhole-option-stats">
+    <dl class="blackhole-option-stats" id={statsId}>
       {
         stats.map((stat) => (
           <div class="blackhole-option-stat">

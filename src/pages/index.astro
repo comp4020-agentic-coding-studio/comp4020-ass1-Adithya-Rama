@@ -420,7 +420,8 @@ const supermassiveStats = [
           <figure class="comparison-chart">
             <svg viewBox="0 0 220 110" role="img" aria-labelledby="comparison-chart-title">
               <title id="comparison-chart-title"
-                >Conceptual tidal stress rising as each black hole's horizon is approached</title
+                >Conceptual tidal stress rising as each black hole's horizon is approached. Stellar
+                (solid line) rises steeply; supermassive (dashed line) rises gently.</title
               >
               <line class="comparison-chart-axis" x1="10" y1="95" x2="210" y2="95"></line>
               <line class="comparison-chart-horizon" x1="170" y1="8" x2="170" y2="95"></line>
@@ -431,6 +432,14 @@ const supermassiveStats = [
                 d="M10,92 C90,91 140,88 170,78"
               ></path>
             </svg>
+            <p class="comparison-chart-legend" aria-hidden="true">
+              <span class="comparison-chart-legend-item comparison-chart-legend-stellar">
+                <span class="comparison-chart-legend-swatch"></span> Stellar
+              </span>
+              <span class="comparison-chart-legend-item comparison-chart-legend-supermassive">
+                <span class="comparison-chart-legend-swatch"></span> Supermassive
+              </span>
+            </p>
             <figcaption class="comparison-chart-caption">
               Conceptual illustration, not measured data — tidal stress vs. distance to horizon.
             </figcaption>
@@ -1427,6 +1436,38 @@ const supermassiveStats = [
 
   .comparison-chart-curve-supermassive {
     stroke: var(--color-earth);
+    stroke-dasharray: 6 4;
+  }
+
+  .comparison-chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin: 0;
+    font-size: var(--text-label);
+    color: var(--color-text-dim);
+  }
+
+  .comparison-chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+  }
+
+  .comparison-chart-legend-swatch {
+    display: inline-block;
+    width: 1rem;
+    height: 2px;
+  }
+
+  .comparison-chart-legend-stellar .comparison-chart-legend-swatch {
+    background: var(--color-you);
+  }
+
+  .comparison-chart-legend-supermassive .comparison-chart-legend-swatch {
+    background-image: linear-gradient(to right, var(--color-earth) 60%, transparent 60%);
+    background-size: 4px 2px;
+    background-repeat: repeat-x;
   }
 
   .comparison-chart-caption {
@@ -1793,6 +1834,7 @@ const supermassiveStats = [
     .sync-stage.synced .sync-connector-pulse,
     .cone-arrow,
     .escape-thrust-fill,
+    .signal-pulse,
     .experience[data-scene="outcome"] .outcome-image,
     .experience[data-scene="outcome"] .outcome-headline,
     .experience[data-scene="outcome"] .outcome-stats,
