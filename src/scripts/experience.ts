@@ -43,7 +43,6 @@ export function initExperience(): void {
     lookBackToggle?.setAttribute("aria-pressed", String(on));
     if (lookBackStateLabel) lookBackStateLabel.textContent = on ? "On" : "Off";
   }
-
   function showScene(scene: string): void {
     if (!root) return;
     root.dataset.scene = scene;
@@ -97,6 +96,7 @@ export function initExperience(): void {
       if (!input.checked) return;
       const choice: BlackHoleType = input.value === "supermassive" ? "supermassive" : "stellar";
       setBlackHole(choice);
+      root.dataset.blackhole = choice;
       if (startDescentButton) startDescentButton.disabled = false;
     });
   });
@@ -169,11 +169,21 @@ export function initExperience(): void {
   const fallCaption = root.querySelector<HTMLElement>("#fall-caption");
   const timelineSteps = root.querySelectorAll<HTMLElement>(".fall-timeline-step");
   const horizonBanner = root.querySelector<HTMLElement>("#horizon-banner");
+  const horizonBannerSubtitle = root.querySelector<HTMLElement>("#horizon-banner-subtitle");
   const horizonCrossedPanel = root.querySelector<HTMLElement>("#horizon-crossed-panel");
   const horizonCrossedHeading = root.querySelector<HTMLElement>("#horizon-crossed-heading");
+  const crossedKicker = root.querySelector<HTMLElement>("#crossed-kicker");
+  const crossedYouLabel = root.querySelector<HTMLElement>("#crossed-you-label");
+  const crossedYouHeading = root.querySelector<HTMLElement>("#crossed-you-heading");
+  const crossedYouCopy = root.querySelector<HTMLElement>("#crossed-you-copy");
+  const crossedEarthLabel = root.querySelector<HTMLElement>("#crossed-earth-label");
+  const crossedEarthHeading = root.querySelector<HTMLElement>("#crossed-earth-heading");
+  const crossedEarthCopy = root.querySelector<HTMLElement>("#crossed-earth-copy");
+  const clockContinuityLabel = root.querySelector<HTMLElement>("#clock-continuity-label");
   const fallAstronautCool = root.querySelector<HTMLElement>(".fall-astronaut-cool");
   const fallAstronautWarm = root.querySelector<HTMLElement>(".fall-astronaut-warm");
   const escapeAttempt = root.querySelector<HTMLElement>("#escape-attempt");
+  const escapeLede = root.querySelector<HTMLElement>("#escape-lede");
   const escapeControl = root.querySelector<HTMLButtonElement>("#escape-control");
   const escapeReadout = root.querySelector<HTMLElement>("#escape-readout");
   const escapeCoreLine = root.querySelector<HTMLElement>("#escape-core-line");
@@ -196,7 +206,7 @@ export function initExperience(): void {
     { headline: string; crossing: string; image: string; alt: string }
   > = {
     stellar: {
-      headline: "Spaghettified well before the horizon.",
+      headline: "Tidal forces destroyed the intact observer before the horizon.",
       crossing: "Rapid destruction",
       image: "img/astronaut-spaghetti.webp",
       alt: "An astronaut stretched into an extreme thread by severe tidal forces",
@@ -311,10 +321,18 @@ export function initExperience(): void {
     }
 
     if (descendControl && metrics.progress >= MAX_FALL_PROGRESS && !crossed && !crossing) {
+      const isStellar = getBlackHole() === "stellar";
       descendControl.disabled = false;
-      descendControl.textContent = "Cross the event horizon";
+      descendControl.textContent = isStellar ? "Witness tidal breakup" : "Cross the event horizon";
       if (fallHint) {
-        fallHint.textContent = "This is the point of no return. Press to cross the event horizon.";
+        fallHint.textContent = isStellar
+          ? "The tidal gradient is already destructive. Press to witness the final intact moment."
+          : "This is the point of no return. Press to cross the event horizon.";
+      }
+      if (horizonBannerSubtitle) {
+        horizonBannerSubtitle.textContent = isStellar
+          ? "Tidal breakup begins before you reach it"
+          : "Point of no return";
       }
     }
   }
@@ -560,6 +578,72 @@ export function initExperience(): void {
     fallVoid?.resize();
   });
 
+  function configureJourneyOutcome(blackHole: BlackHoleType): void {
+    if (!root) return;
+    const isStellar = blackHole === "stellar";
+    root.dataset.fate = isStellar ? "tidal-breakup" : "intact-crossing";
+
+    if (crossedKicker) {
+      crossedKicker.textContent = isStellar
+        ? "STELLAR-MASS · BEFORE THE HORIZON"
+        : "SUPERMASSIVE · HORIZON CROSSING";
+    }
+    if (horizonCrossedHeading) {
+      horizonCrossedHeading.textContent = isStellar ? "Tidal breakup" : "Horizon crossed";
+    }
+    if (crossedYouLabel) {
+      crossedYouLabel.textContent = isStellar ? "YOU · TIDAL LIMIT" : "YOU · NOW";
+    }
+    if (crossedYouHeading) {
+      crossedYouHeading.textContent = isStellar
+        ? "The tidal gradient destroys the intact observer."
+        : "No wall. No flash. Your clock continues.";
+    }
+    if (crossedYouCopy) {
+      crossedYouCopy.textContent = isStellar
+        ? "Your nearer side accelerates so much faster than your farther side that body and craft are stretched apart before reaching the horizon."
+        : "You cross in finite time. Locally, physics still feels ordinary—but every possible future direction now leads deeper inward.";
+    }
+    if (clockContinuityLabel) {
+      clockContinuityLabel.textContent = isStellar
+        ? "no single intact observer continues"
+        : "proper time continues →";
+    }
+    if (crossedEarthLabel) {
+      crossedEarthLabel.textContent = isStellar
+        ? "EARTH · FINAL DISTORTED LIGHT"
+        : "EARTH · LAST RECEIVED LIGHT";
+    }
+    if (crossedEarthHeading) {
+      crossedEarthHeading.textContent = isStellar
+        ? "Earth receives the breakup late and increasingly redshifted."
+        : "Earth never receives an image of the crossing.";
+    }
+    if (crossedEarthCopy) {
+      crossedEarthCopy.textContent = isStellar
+        ? "The image Earth receives is delayed light, not your present. It stretches, reddens and fades; no intact you reaches the horizon."
+        : "Your signals arrive later, redder and fainter, until you become undetectable. The final visible image is not your present.";
+    }
+    if (escapeLede) {
+      escapeLede.textContent = isStellar
+        ? "Follow the final information"
+        : "Test the only remaining choice";
+    }
+    if (escapeControl) {
+      escapeControl.textContent = isStellar ? "Resolve final light" : "Fire engines";
+    }
+    if (escapeReadout) {
+      escapeReadout.textContent = isStellar
+        ? "The astronaut is gone. Earth is still receiving older light from the breakup."
+        : "Engines ready. The cyan arrow is thrust; the curved path is your future.";
+    }
+    if (escapeCoreLine) {
+      escapeCoreLine.textContent = isStellar
+        ? "Tidal destruction happens outside the horizon; the remaining debris still has an unavoidable inward future."
+        : "The engines work. Escape does not: inside the horizon, inward is part of your future.";
+    }
+  }
+
   // Crossing is a scripted, discrete event, not a continued function of
   // `progress` -- fall-sim.ts's formulas diverge as progress -> 1, so there
   // is no "progress = 1" to render. On the YOU side, deliberately nothing
@@ -577,10 +661,12 @@ export function initExperience(): void {
       el.style.transitionDuration = `${duration}ms`;
     });
 
+    const isStellar = getBlackHole() === "stellar";
     root.dataset.horizon = "crossing";
     // Every continuous input is refused from here on -- past the horizon there
     // is no retreating -- so cancel anything already queued or in flight.
     cancelQueuedDescent();
+    setLookBack(false);
     stopRetreat();
     stopHold();
     if (motionIdleTimeoutId !== undefined) {
@@ -592,14 +678,18 @@ export function initExperience(): void {
     fallVoid?.setPhase("crossing");
     if (descendControl) {
       descendControl.disabled = true;
-      descendControl.textContent = "Crossing…";
+      descendControl.textContent = isStellar ? "Tidal breakup…" : "Crossing…";
     }
     if (sendSignalButton) sendSignalButton.disabled = true;
-    if (fallReadoutEarth) fallReadoutEarth.textContent = "Signal: lost";
+    if (fallReadoutEarth) {
+      fallReadoutEarth.textContent = isStellar ? "Signal: final distorted light" : "Signal: lost";
+    }
     root.style.setProperty("--fall-brightness", "0.05");
     root.style.setProperty("--fall-warmth", "1");
     root.style.setProperty("--fall-motion-blur", "2.5px");
-    if (fallStatus) fallStatus.textContent = "Crossing the event horizon.";
+    if (fallStatus) {
+      fallStatus.textContent = isStellar ? "Tidal breakup before the horizon." : "Crossing the event horizon.";
+    }
 
     // A signal already in flight has nowhere left to arrive -- resolve it as
     // lost now rather than letting its own timeout land later and silently
@@ -609,10 +699,20 @@ export function initExperience(): void {
       clearTimeout(signalTimeoutId);
       signalTimeoutId = undefined;
       signalSending = false;
-      if (signalOutgoing) signalOutgoing.textContent = "Lost";
-      if (signalObserved) signalObserved.textContent = "Lost — horizon crossed mid-transit";
-      if (signalReceived) signalReceived.textContent = "Never arrives";
-      if (signalStatus) signalStatus.textContent = "Signal lost: the horizon was crossed before it arrived.";
+      if (signalOutgoing) signalOutgoing.textContent = isStellar ? "Fragmented" : "Lost";
+      if (signalObserved) {
+        signalObserved.textContent = isStellar
+          ? "Final distorted transmission"
+          : "Lost — horizon crossed mid-transit";
+      }
+      if (signalReceived) {
+        signalReceived.textContent = isStellar ? "Fades below detection" : "Never arrives";
+      }
+      if (signalStatus) {
+        signalStatus.textContent = isStellar
+          ? "The final signal is stretched, delayed and fading after tidal breakup."
+          : "Signal lost: the horizon was crossed before it arrived.";
+      }
       signalPulse?.classList.remove("is-armed", "is-arriving");
     }
 
@@ -627,6 +727,8 @@ export function initExperience(): void {
     crossing = false;
     crossed = true;
     root.dataset.horizon = "crossed";
+    const blackHole = getBlackHole() ?? "stellar";
+    configureJourneyOutcome(blackHole);
     // Inside: the eerie calm. The renderer stops the streaks and drift and
     // settles into a near-still, deep-redshifted field.
     fallVoid?.setPhase("crossed");
@@ -635,14 +737,24 @@ export function initExperience(): void {
     });
     if (descendControl) {
       descendControl.disabled = true;
-      descendControl.textContent = "Beyond the horizon";
+      descendControl.textContent =
+        blackHole === "stellar" ? "Observer disrupted" : "Beyond the horizon";
     }
     // The hint still read "press to cross the event horizon" from the threshold
     // state, which is no longer true and no longer possible.
     if (fallHint) {
-      fallHint.textContent = "Inside the horizon. There is no route back out.";
+      fallHint.textContent =
+        blackHole === "stellar"
+          ? "The intact observer ended before the horizon; delayed light continues outward."
+          : "Inside the horizon. There is no route back out.";
     }
-    if (fallStatus) fallStatus.textContent = "Horizon crossed.";
+    if (fallStatus) {
+      fallStatus.textContent =
+        blackHole === "stellar" ? "Tidal breakup complete." : "Horizon crossed.";
+    }
+    if (blackHole === "stellar" && fallReadoutYou) {
+      fallReadoutYou.textContent = "Observer integrity: lost to tidal forces";
+    }
     if (horizonCrossedPanel) {
       horizonCrossedPanel.removeAttribute("inert");
       horizonCrossedPanel.setAttribute("aria-hidden", "false");
@@ -651,7 +763,11 @@ export function initExperience(): void {
       escapeAttempt.removeAttribute("inert");
       escapeAttempt.setAttribute("aria-hidden", "false");
     }
-    startYouClockTicking();
+    if (blackHole === "supermassive") {
+      startYouClockTicking();
+    } else if (fallClockYou) {
+      fallClockYou.textContent = "— disrupted —";
+    }
     if (horizonCrossedHeading) {
       horizonCrossedHeading.setAttribute("tabindex", "-1");
       horizonCrossedHeading.focus();
@@ -682,27 +798,44 @@ export function initExperience(): void {
     const duration = prefersReducedMotion
       ? ESCAPE_ATTEMPT_DURATION_MS_REDUCED
       : ESCAPE_ATTEMPT_DURATION_MS;
+    const isStellar = getBlackHole() === "stellar";
 
     if (escapeAttempt) escapeAttempt.dataset.escape = "attempting";
     if (escapeControl) {
       escapeControl.disabled = true;
-      escapeControl.textContent = "Engines firing…";
+      escapeControl.textContent = isStellar ? "Resolving final light…" : "Engines firing…";
     }
-    if (escapeReadout) escapeReadout.textContent = "Thrust: firing · Local velocity: rising";
-    if (fallStatus) fallStatus.textContent = "Attempting escape. Engines firing.";
+    if (escapeReadout) {
+      escapeReadout.textContent = isStellar
+        ? "Earth receives successive older frames: stretched, delayed, redder, fainter."
+        : "Engines fire outward—the cyan thrust vector is real. Watch the future path.";
+    }
+    if (fallStatus) {
+      fallStatus.textContent = isStellar
+        ? "Resolving the final delayed light after tidal breakup."
+        : "Attempting escape. Engines firing.";
+    }
 
     escapeTimeoutId = setTimeout(() => {
       escapeTimeoutId = undefined;
       escaping = false;
       escapeAttempted = true;
       if (escapeAttempt) escapeAttempt.dataset.escape = "inevitable";
-      if (escapeControl) escapeControl.textContent = "No route exists";
+      if (escapeControl) {
+        escapeControl.textContent = isStellar ? "No intact signal remains" : "No route exists";
+      }
       if (escapeReadout) {
-        escapeReadout.textContent = "Thrust: futile · Local velocity: irrelevant";
+        escapeReadout.textContent = isStellar
+          ? "The final image fades below detection. Earth never sees an intact horizon crossing."
+          : "The engines work, but the trajectory still curves deeper inward.";
       }
       if (escapeCoreLine) escapeCoreLine.setAttribute("aria-hidden", "false");
       if (seeOutcomeButton) seeOutcomeButton.hidden = false;
-      if (fallStatus) fallStatus.textContent = "Every future direction leads inward.";
+      if (fallStatus) {
+        fallStatus.textContent = isStellar
+          ? "The intact observer was destroyed before the horizon."
+          : "Every future direction leads inward.";
+      }
     }, duration);
   }
 
@@ -870,6 +1003,7 @@ export function initExperience(): void {
     fallVoid?.stop();
     delete root.dataset.descending;
     delete root.dataset.horizon;
+    delete root.dataset.fate;
     cinematicTargets.forEach((el) => {
       el.style.transitionDuration = "";
     });
@@ -915,7 +1049,9 @@ export function initExperience(): void {
       escapeControl.disabled = false;
       escapeControl.textContent = "Fire engines";
     }
-    if (escapeReadout) escapeReadout.textContent = "Thrust: idle · Local velocity: steady";
+    if (escapeReadout) {
+      escapeReadout.textContent = "Engines ready. The cyan arrow is thrust; the curved path is your future.";
+    }
     if (escapeCoreLine) escapeCoreLine.setAttribute("aria-hidden", "true");
     if (seeOutcomeButton) seeOutcomeButton.hidden = true;
 
@@ -953,6 +1089,7 @@ export function initExperience(): void {
 
     setCompletedRun(true);
     setBlackHole(other);
+    root.dataset.blackhole = other;
     setFallProgress(0);
     resetRunUI();
 
@@ -978,6 +1115,7 @@ export function initExperience(): void {
   function replayExperience(): void {
     if (!root) return;
     resetAllRuns();
+    delete root.dataset.blackhole;
     resetRunUI();
 
     blackHoleInputs.forEach((input) => {

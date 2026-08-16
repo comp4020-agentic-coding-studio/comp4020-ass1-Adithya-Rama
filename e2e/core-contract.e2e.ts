@@ -29,8 +29,26 @@ async function reachHorizonAndSeeOutcome(page: Page): Promise<string> {
   // Enough real holding to clamp progress at MAX_FALL_PROGRESS, plus margin
   // against CI timer jitter.
   await holdDescend(page, Math.ceil(MAX_FALL_PROGRESS / DESCEND_RATE_PER_SECOND) + 1);
-  await page.locator("#descend-control").click(); // one-shot: cross the horizon
+  await page.locator("#descend-control").click(); // one-shot: crossing or tidal breakup
   await expect(page.locator("#horizon-crossed-panel")).toHaveAttribute("aria-hidden", "false");
+
+  const root = page.getByTestId("interaction-output");
+  const blackHole = await root.getAttribute("data-blackhole");
+  if (blackHole === "stellar") {
+    await expect(root).toHaveAttribute("data-fate", "tidal-breakup");
+    await expect(page.locator("#horizon-crossed-heading")).toHaveText("Tidal breakup");
+    await expect(page.locator("#fall-clock-you")).toContainText("disrupted");
+    await expect(page.locator(".stellar-fate-visual")).toBeVisible();
+    await expect(page.locator(".trajectory-stage")).toBeHidden();
+    await expect(page.getByTestId("escape-control")).toHaveText("Resolve final light");
+  } else {
+    await expect(root).toHaveAttribute("data-fate", "intact-crossing");
+    await expect(page.locator("#horizon-crossed-heading")).toHaveText("Horizon crossed");
+    await expect(page.locator("#fall-clock-you")).not.toContainText("disrupted");
+    await expect(page.locator(".stellar-fate-visual")).toBeHidden();
+    await expect(page.locator(".trajectory-stage")).toBeVisible();
+    await expect(page.getByTestId("escape-control")).toHaveText("Fire engines");
+  }
 
   await page.getByTestId("escape-control").click();
   await expect(page.getByTestId("see-outcome")).toBeVisible();

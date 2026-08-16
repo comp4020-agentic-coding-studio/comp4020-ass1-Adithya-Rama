@@ -213,6 +213,62 @@ const supermassiveStats = [
             />
             <canvas class="fall-void" id="fall-void" aria-hidden="true"></canvas>
 
+            <div class="perspective-divider" aria-hidden="true">
+              <span>same fall</span>
+              <i></i>
+              <span>different evidence</span>
+            </div>
+
+            <div class="camera-id camera-id-you" aria-hidden="true">
+              <strong>YOU</strong>
+              <span>onboard view · continuous</span>
+            </div>
+
+            <div class="mass-fate-badge" aria-hidden="true">
+              <span class="mass-fate-stellar"><strong>STELLAR-MASS</strong> tidal gradient: lethal before horizon</span>
+              <span class="mass-fate-supermassive"><strong>SUPERMASSIVE</strong> tidal gradient: gentle at horizon</span>
+            </div>
+
+            <div class="stellar-breakup-visual" aria-hidden="true">
+              <i class="breakup-wave breakup-wave-one"></i>
+              <i class="breakup-wave breakup-wave-two"></i>
+              <img src={withBase("img/astronaut-spaghetti.webp")} alt="" />
+              <span>tidal breakup · no intact observer</span>
+            </div>
+
+            <div class="earth-camera" aria-hidden="true">
+              <img
+                class="earth-camera-bg"
+                src={withBase("img/blackhole-split.webp")}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="earth-feed-noise"></div>
+              <div class="earth-horizon-marker"></div>
+              <div class="earth-astronaut-trail">
+                <img class="earth-astronaut earth-astronaut-ghost earth-astronaut-ghost-3" src={withBase("img/astronaut-reach-cool.webp")} alt="" />
+                <img class="earth-astronaut earth-astronaut-ghost earth-astronaut-ghost-2" src={withBase("img/astronaut-reach-cool.webp")} alt="" />
+                <img class="earth-astronaut earth-astronaut-ghost earth-astronaut-ghost-1" src={withBase("img/astronaut-reach-cool.webp")} alt="" />
+                <img class="earth-astronaut earth-astronaut-now" src={withBase("img/astronaut-reach-cool.webp")} alt="" />
+              </div>
+              <div class="camera-id camera-id-earth">
+                <strong>EARTH</strong>
+                <span>telescope feed · received light</span>
+              </div>
+              <p class="earth-feed-caption">You do not watch the crossing. You receive an older, redder, fainter image.</p>
+            </div>
+
+            <div class="lookback-view" aria-hidden="true">
+              <div class="lookback-lens lookback-lens-outer"></div>
+              <div class="lookback-lens lookback-lens-inner"></div>
+              <div class="lookback-earth"><span></span></div>
+              <div class="lookback-copy">
+                <strong>EARTH · BEHIND YOU</strong>
+                <span>The outward universe is squeezed into a warped patch of sky.</span>
+              </div>
+            </div>
+
             <img
               class="fall-hand"
               src={withBase("img/astronaut-glove.webp")}
@@ -221,7 +277,7 @@ const supermassiveStats = [
               loading="lazy"
               decoding="async"
             />
-            <div class="fall-astronaut-stack" aria-hidden="true">
+            <div class="fall-astronaut-stack legacy-earth-astronaut" aria-hidden="true">
               <img
                 class="fall-astronaut fall-astronaut-cool"
                 src={withBase("img/astronaut-reach-cool.webp")}
@@ -282,44 +338,57 @@ const supermassiveStats = [
 
           <div class="horizon-banner" id="horizon-banner" aria-hidden="true">
             <p class="horizon-banner-title">Event Horizon</p>
-            <p class="horizon-banner-subtitle">Point of no return</p>
+            <p class="horizon-banner-subtitle" id="horizon-banner-subtitle">Point of no return</p>
           </div>
 
           <div class="horizon-crossed-panel" id="horizon-crossed-panel" aria-hidden="true" inert>
-            <img
-              class="horizon-crossed-bg"
-              src={withBase("img/blackhole-split-astronaut.webp")}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-            />
-            <h3 class="horizon-crossed-heading" id="horizon-crossed-heading">Horizon crossed</h3>
-            <p class="horizon-you-copy">
-              Nothing happened. Your clock continues. No giant explosion. No wall. No magical
-              portal.
-            </p>
-            <p class="horizon-earth-copy">You can no longer send a signal back.</p>
+            <div class="crossed-title-row">
+              <span class="crossed-kicker" id="crossed-kicker">ONE EVENT · TWO EXPERIENCES</span>
+              <h3 class="horizon-crossed-heading" id="horizon-crossed-heading">Horizon crossed</h3>
+            </div>
+            <div class="crossed-perspectives">
+              <section class="crossed-perspective crossed-you">
+                <span class="crossed-label" id="crossed-you-label">YOU · NOW</span>
+                <strong id="crossed-you-heading">No wall. No flash. Your clock continues.</strong>
+                <p id="crossed-you-copy">You cross in finite time. Locally, physics still feels ordinary—but every possible future direction now leads deeper inward.</p>
+                <div class="clock-continuity" aria-hidden="true"><i></i><span id="clock-continuity-label">proper time continues →</span></div>
+              </section>
+              <section class="crossed-perspective crossed-earth">
+                <span class="crossed-label" id="crossed-earth-label">EARTH · LAST RECEIVED LIGHT</span>
+                <strong id="crossed-earth-heading">Earth never receives an image of the crossing.</strong>
+                <p id="crossed-earth-copy">Your signals arrive later, redder and fainter, until you become undetectable. The final visible image is not your present.</p>
+                <div class="last-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><span>no new signal</span></div>
+              </section>
+            </div>
           </div>
 
           <div class="escape-attempt" id="escape-attempt" aria-hidden="true" inert>
-            <p class="escape-lede">One last option</p>
-            <div class="future-cone" aria-hidden="true">
-              <svg viewBox="0 0 200 140" aria-hidden="true" focusable="false">
-                <line class="cone-arrow" data-arrow="0" x1="100" y1="130" x2="100" y2="20"></line>
-                <line class="cone-arrow" data-arrow="1" x1="100" y1="130" x2="100" y2="20"></line>
-                <line class="cone-arrow" data-arrow="2" x1="100" y1="130" x2="100" y2="20"></line>
-                <line class="cone-arrow" data-arrow="3" x1="100" y1="130" x2="100" y2="20"></line>
-                <line class="cone-arrow" data-arrow="4" x1="100" y1="130" x2="100" y2="20"></line>
-                <circle class="cone-origin" cx="100" cy="130" r="4"></circle>
+            <p class="escape-lede" id="escape-lede">Test the only remaining choice</p>
+            <div class="stellar-fate-visual" aria-hidden="true">
+              <span class="stellar-fate-body"></span>
+              <span class="stellar-fate-signal"></span>
+              <span class="stellar-fate-earth">EARTH</span>
+              <strong>tidal breakup → delayed light → silence</strong>
+            </div>
+            <div class="trajectory-stage" aria-hidden="true">
+              <span class="trajectory-outside">outward</span>
+              <span class="trajectory-inward">deeper inward</span>
+              <svg viewBox="0 0 420 150" aria-hidden="true" focusable="false">
+                <defs>
+                  <marker id="future-arrowhead" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z"></path></marker>
+                  <marker id="thrust-arrowhead" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z"></path></marker>
+                </defs>
+                <path class="trajectory-grid" d="M24 28 H396 M24 76 H396 M24 124 H396"></path>
+                <path class="horizon-curve" d="M216 -8 C180 38 180 112 216 158"></path>
+                <circle class="trajectory-core" cx="382" cy="76" r="42"></circle>
+                <path class="engine-vector" d="M205 78 C160 73 120 62 76 40" marker-end="url(#thrust-arrowhead)"></path>
+                <path class="future-trajectory" d="M205 78 C155 68 152 26 225 35 C295 45 310 102 366 80" marker-end="url(#future-arrowhead)"></path>
+                <g class="trajectory-craft" transform="translate(205 78)"><circle r="8"></circle><path d="M-12 -5 L-21 0 L-12 5"></path></g>
               </svg>
             </div>
-            <div class="escape-thrust-meter" aria-hidden="true">
-              <span class="escape-thrust-fill"></span>
-            </div>
-            <p class="escape-readout" id="escape-readout">Thrust: idle · Local velocity: steady</p>
+            <p class="escape-readout" id="escape-readout">Engines ready. The cyan arrow is thrust; the curved path is your future.</p>
             <p class="escape-core-line" id="escape-core-line" aria-hidden="true">
-              Inside the horizon, inward is not merely a direction. It is part of your future.
+              The engines work. Escape does not: inside the horizon, inward is part of your future.
             </p>
             <div class="hero-cta">
               <button
@@ -2652,6 +2721,1035 @@ const supermassiveStats = [
 
     .gravity-glow {
       opacity: 0.7;
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     Split-observer cinema
+     The left 62% is the infaller's local camera. The right 38% is not a
+     second live camera: it is explicitly a telescope feed assembled from
+     light reaching Earth. Their different motion is the explanation. */
+  .fall-void-bg,
+  .fall-void {
+    clip-path: inset(0 38% 0 0);
+  }
+
+  .fall-void-bg {
+    inset: -12% 38% -12% -10%;
+    width: 74%;
+    height: 124%;
+    object-position: 58% 50%;
+    transform: scale(calc(0.82 + var(--fall-progress, 0) * 1.18))
+      translateY(calc(var(--fall-progress, 0) * 5%))
+      rotate(calc(var(--fall-progress, 0) * 2deg));
+  }
+
+  .fall-void-stage::before,
+  .fall-void-stage::after {
+    right: 38%;
+  }
+
+  .legacy-earth-astronaut {
+    display: none;
+  }
+
+  .camera-id {
+    position: absolute;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0.65rem;
+    border-left: 2px solid currentColor;
+    background: linear-gradient(90deg, rgb(2 5 12 / 76%), transparent);
+    text-shadow: 0 2px 8px #000;
+  }
+
+  .camera-id strong {
+    font-size: 0.72rem;
+    letter-spacing: 0.26em;
+  }
+
+  .camera-id span {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-dim);
+  }
+
+  .camera-id-you {
+    top: 8.25rem;
+    left: clamp(12rem, 20vw, 19.5rem);
+    color: var(--color-you);
+  }
+
+  .perspective-divider {
+    position: absolute;
+    z-index: 5;
+    top: 7.75rem;
+    bottom: 6.25rem;
+    left: 62%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 1px;
+    color: var(--color-text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.54rem;
+    text-shadow: 0 1px 6px #000;
+  }
+
+  .perspective-divider i {
+    flex: 1;
+    width: 1px;
+    margin: 0.45rem 0;
+    background: linear-gradient(transparent, rgb(255 255 255 / 52%) 20% 80%, transparent);
+    box-shadow: 0 0 18px rgb(120 205 255 / 34%);
+  }
+
+  .perspective-divider span {
+    writing-mode: vertical-rl;
+  }
+
+  .earth-camera {
+    position: absolute;
+    z-index: 2;
+    inset: 0 0 0 62%;
+    overflow: hidden;
+    border-left: 1px solid rgb(255 255 255 / 20%);
+    background:
+      radial-gradient(circle at 76% 50%, #020207 0 18%, transparent 19%),
+      #02040b;
+    isolation: isolate;
+  }
+
+  .earth-camera::after {
+    content: "";
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgb(2 5 12 / 48%), transparent 18%),
+      radial-gradient(circle at 62% 50%, transparent 15%, rgb(0 0 0 / 44%) 83%);
+  }
+
+  .earth-camera-bg {
+    position: absolute;
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    object-fit: cover;
+    object-position: 69% 50%;
+    opacity: 0.78;
+    filter: saturate(0.78) brightness(0.7);
+    transform: scale(1.02);
+  }
+
+  .earth-feed-noise {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    opacity: calc(0.06 + var(--fall-progress, 0) * 0.28);
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 3px,
+      rgb(255 120 80 / 13%) 4px
+    );
+    mix-blend-mode: screen;
+  }
+
+  .earth-horizon-marker {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 68%;
+    width: clamp(9rem, 20vw, 18rem);
+    aspect-ratio: 1;
+    border: 1px solid rgb(255 142 76 / 50%);
+    border-radius: 50%;
+    box-shadow:
+      0 0 24px rgb(255 96 54 / 14%),
+      inset 0 0 24px rgb(255 96 54 / 10%);
+    transform: translate(-50%, -50%);
+  }
+
+  .earth-astronaut-trail {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+  }
+
+  .earth-astronaut {
+    position: absolute;
+    top: 50%;
+    left: calc(7% + var(--fall-progress, 0) * 54%);
+    width: clamp(3.4rem, 6.4vw, 6.8rem);
+    transform: translate(-50%, -50%)
+      scale(calc(1 - var(--fall-progress, 0) * 0.54));
+    filter:
+      sepia(calc(var(--fall-progress, 0) * 0.9))
+      saturate(calc(1 + var(--fall-progress, 0) * 2.4))
+      hue-rotate(calc(var(--fall-progress, 0) * -18deg))
+      blur(calc(var(--fall-progress, 0) * 1.1px));
+  }
+
+  .earth-astronaut-now {
+    opacity: calc(0.94 - var(--fall-progress, 0) * 0.72);
+    transition: left 180ms linear, opacity 180ms linear, filter 180ms linear;
+  }
+
+  .earth-astronaut-ghost {
+    opacity: calc(var(--fall-progress, 0) * 0.22);
+    mix-blend-mode: screen;
+  }
+
+  .earth-astronaut-ghost-1 {
+    margin-left: calc(var(--fall-progress, 0) * -2.5rem);
+  }
+
+  .earth-astronaut-ghost-2 {
+    margin-left: calc(var(--fall-progress, 0) * -5rem);
+    opacity: calc(var(--fall-progress, 0) * 0.13);
+  }
+
+  .earth-astronaut-ghost-3 {
+    margin-left: calc(var(--fall-progress, 0) * -7.25rem);
+    opacity: calc(var(--fall-progress, 0) * 0.07);
+  }
+
+  .camera-id-earth {
+    top: 8.25rem;
+    left: 1.25rem;
+    color: var(--color-earth-strong, var(--color-earth));
+  }
+
+  .earth-feed-caption {
+    position: absolute;
+    z-index: 5;
+    right: 1rem;
+    bottom: 7rem;
+    left: 1.5rem;
+    margin: 0;
+    padding-top: 0.6rem;
+    border-top: 1px solid rgb(255 140 86 / 40%);
+    color: color-mix(in srgb, var(--color-text-dim), var(--color-earth) calc(var(--fall-progress, 0) * 45%));
+    font-size: 0.68rem;
+    line-height: 1.55;
+    text-align: right;
+    text-shadow: 0 2px 8px #000;
+  }
+
+  .fall-hand {
+    z-index: 3;
+    width: clamp(13rem, 31vw, 29rem);
+    opacity: calc(0.38 + var(--fall-progress, 0) * 0.34);
+    transform: scale(calc(0.9 + var(--fall-progress, 0) * 0.45))
+      translate(calc(var(--fall-progress, 0) * 2%), calc(var(--fall-progress, 0) * -4%))
+      rotate(calc(var(--fall-progress, 0) * -4deg));
+  }
+
+  .lookback-view {
+    position: absolute;
+    z-index: 4;
+    inset: 0 38% 0 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: perspective(900px) rotateY(-22deg) scale(1.08);
+    transform-origin: right center;
+    transition: opacity 550ms ease, transform 900ms cubic-bezier(0.2, 0.75, 0.2, 1);
+    background:
+      radial-gradient(circle at 28% 46%, rgb(70 136 255 / 20%) 0 1%, transparent 16%),
+      repeating-radial-gradient(ellipse at 28% 46%, transparent 0 4%, rgb(120 190 255 / 8%) 4.3%, transparent 4.8% 9%),
+      radial-gradient(ellipse at 48% 50%, #13254b 0, #050817 38%, #010208 72%);
+  }
+
+  .experience[data-scene="falling"][data-lookback="true"] .lookback-view {
+    opacity: 1;
+    transform: perspective(900px) rotateY(0deg) scale(1);
+  }
+
+  .experience[data-scene="falling"][data-lookback="true"] .hero-image {
+    opacity: 0;
+    animation: none;
+  }
+
+  .experience[data-scene="falling"][data-lookback="true"] .fall-hand {
+    opacity: 0.18;
+    transform: translateX(-30%) rotate(-12deg);
+  }
+
+  .lookback-earth {
+    position: absolute;
+    top: 46%;
+    left: 28%;
+    width: clamp(3.5rem, 7vw, 7rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(calc(1 - var(--fall-progress, 0) * 0.58));
+    background:
+      radial-gradient(circle at 34% 28%, rgb(255 255 255 / 85%) 0 2%, transparent 3%),
+      radial-gradient(circle at 62% 55%, #65c36e 0 9%, transparent 10%),
+      radial-gradient(circle at 36% 42%, #8bcf78 0 10%, transparent 11%),
+      radial-gradient(circle at 42% 42%, #4d9ee8 0 58%, #0d366c 74%, #020713 76%);
+    box-shadow:
+      0 0 0 2px rgb(140 205 255 / 46%),
+      0 0 28px rgb(70 160 255 / 70%),
+      0 0 80px rgb(76 116 255 / 34%);
+  }
+
+  .lookback-earth span {
+    position: absolute;
+    inset: -34%;
+    border: 2px solid rgb(135 205 255 / 34%);
+    border-radius: 50%;
+    transform: skewX(calc(var(--fall-lensing, 0) * 22deg));
+  }
+
+  .lookback-lens {
+    position: absolute;
+    top: 46%;
+    left: 28%;
+    border: 1px solid rgb(128 199 255 / 26%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .lookback-lens-outer {
+    width: calc(15rem + var(--fall-lensing, 0) * 12rem);
+    height: calc(8rem + var(--fall-lensing, 0) * 4rem);
+    box-shadow: 0 0 70px rgb(105 142 255 / 16%);
+  }
+
+  .lookback-lens-inner {
+    width: calc(10rem + var(--fall-lensing, 0) * 7rem);
+    height: calc(5rem + var(--fall-lensing, 0) * 3rem);
+  }
+
+  .lookback-copy {
+    position: absolute;
+    top: 50%;
+    left: 44%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 18rem;
+    padding-left: 1rem;
+    border-left: 1px solid var(--color-you);
+    text-shadow: 0 2px 8px #000;
+  }
+
+  .lookback-copy strong {
+    color: var(--color-you);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+  }
+
+  .lookback-copy span {
+    color: var(--color-text-dim);
+    font-size: 0.76rem;
+    line-height: 1.6;
+  }
+
+  .experience[data-horizon="approaching"] .earth-astronaut-now {
+    animation: received-frame-flicker 1.1s steps(2, end) infinite;
+  }
+
+  .experience[data-horizon="crossing"] .earth-astronaut-now,
+  .experience[data-horizon="crossed"] .earth-astronaut-now {
+    left: 61%;
+    opacity: 0.1;
+    filter: sepia(1) saturate(3) hue-rotate(-18deg) blur(1.6px);
+  }
+
+  .experience[data-horizon="crossing"] .earth-camera-bg,
+  .experience[data-horizon="crossed"] .earth-camera-bg {
+    opacity: 0.62;
+    filter: saturate(0.58) brightness(0.52);
+  }
+
+  .experience[data-horizon="crossed"] .fall-side {
+    opacity: 0.18;
+  }
+
+  @keyframes received-frame-flicker {
+    0%, 78% { opacity: 0.28; }
+    80% { opacity: 0.08; }
+    88% { opacity: 0.22; }
+    100% { opacity: 0.12; }
+  }
+
+  /* Post-horizon: a paired conclusion first, then a literal trajectory test. */
+  .horizon-crossed-panel {
+    z-index: 7;
+    top: 14%;
+    width: min(64rem, 88vw);
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 16%);
+    border-top-color: rgb(255 138 82 / 65%);
+    border-radius: var(--radius-lg);
+    background: rgb(3 6 14 / 88%);
+    box-shadow: 0 24px 80px rgb(0 0 0 / 62%);
+    text-align: left;
+  }
+
+  .crossed-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid rgb(255 255 255 / 12%);
+  }
+
+  .crossed-kicker,
+  .crossed-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .crossed-kicker {
+    color: var(--color-text-faint);
+  }
+
+  .horizon-crossed-heading {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+  }
+
+  .crossed-perspectives {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .crossed-perspective {
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .crossed-perspective + .crossed-perspective {
+    border-left: 1px solid rgb(255 255 255 / 14%);
+  }
+
+  .crossed-you {
+    box-shadow: inset 3px 0 var(--color-you-dim);
+  }
+
+  .crossed-earth {
+    box-shadow: inset -3px 0 var(--color-earth-dim);
+  }
+
+  .crossed-you .crossed-label {
+    color: var(--color-you);
+  }
+
+  .crossed-earth .crossed-label {
+    color: var(--color-earth-strong, var(--color-earth));
+  }
+
+  .crossed-perspective strong {
+    color: var(--color-text);
+    font-size: 0.88rem;
+  }
+
+  .crossed-perspective p {
+    margin: 0;
+    color: var(--color-text-dim);
+    font-size: 0.72rem;
+    line-height: 1.55;
+  }
+
+  .clock-continuity,
+  .last-signal {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 1rem;
+    color: var(--color-text-faint);
+    font: 0.58rem var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .clock-continuity i {
+    width: 42%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-you), transparent);
+    box-shadow: var(--glow-you);
+  }
+
+  .last-signal i {
+    width: 0.25rem;
+    height: 0.75rem;
+    background: var(--color-earth);
+  }
+
+  .last-signal i:nth-child(2) { opacity: 0.55; height: 0.55rem; }
+  .last-signal i:nth-child(3) { opacity: 0.28; height: 0.35rem; }
+  .last-signal i:nth-child(4) { opacity: 0.1; height: 0.16rem; }
+  .last-signal span { margin-left: 0.35rem; }
+
+  .escape-attempt {
+    z-index: 7;
+    bottom: 5.25rem;
+    width: min(44rem, 84vw);
+    gap: 0.3rem;
+    padding: 0.6rem 1rem 0.75rem;
+    border: 1px solid rgb(255 255 255 / 13%);
+    border-radius: var(--radius-lg);
+    background: rgb(3 6 14 / 90%);
+    box-shadow: 0 18px 64px rgb(0 0 0 / 60%);
+  }
+
+  .trajectory-stage {
+    position: relative;
+    width: min(28rem, 70vw);
+  }
+
+  .trajectory-stage svg {
+    display: block;
+    width: 100%;
+    height: 6.5rem;
+  }
+
+  .trajectory-stage > span {
+    position: absolute;
+    z-index: 1;
+    top: 0.15rem;
+    font-size: 0.54rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  .trajectory-outside { left: 8%; }
+  .trajectory-inward { right: 2%; }
+
+  .trajectory-grid {
+    fill: none;
+    stroke: rgb(255 255 255 / 7%);
+    stroke-width: 1;
+  }
+
+  .horizon-curve {
+    fill: none;
+    stroke: var(--color-earth);
+    stroke-width: 2;
+    stroke-dasharray: 5 7;
+    filter: drop-shadow(0 0 5px var(--color-earth-dim));
+  }
+
+  .trajectory-core {
+    fill: #000;
+    stroke: rgb(255 126 72 / 55%);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 13px rgb(255 95 50 / 55%));
+  }
+
+  .trajectory-craft circle {
+    fill: #fff;
+    filter: drop-shadow(0 0 5px var(--color-you));
+  }
+
+  .trajectory-craft path {
+    fill: none;
+    stroke: var(--color-text-dim);
+  }
+
+  .engine-vector,
+  .future-trajectory {
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: 3;
+  }
+
+  .engine-vector {
+    stroke: var(--color-you);
+    opacity: 0.16;
+    stroke-dasharray: 6 5;
+  }
+
+  .future-trajectory {
+    stroke: var(--color-text-dim);
+    stroke-dasharray: 7 7;
+  }
+
+  #thrust-arrowhead path { fill: var(--color-you); }
+  #future-arrowhead path { fill: var(--color-earth); }
+
+  .escape-attempt[data-escape="attempting"] .engine-vector {
+    opacity: 1;
+    animation: trajectory-flow 500ms linear infinite;
+    filter: drop-shadow(0 0 6px var(--color-you));
+  }
+
+  .escape-attempt[data-escape="attempting"] .trajectory-craft {
+    animation: craft-strain 120ms linear infinite alternate;
+  }
+
+  .escape-attempt[data-escape="inevitable"] .engine-vector {
+    opacity: 0.5;
+  }
+
+  .escape-attempt[data-escape="inevitable"] .future-trajectory {
+    stroke: var(--color-earth-strong, var(--color-earth));
+    stroke-dasharray: none;
+    filter: drop-shadow(0 0 6px var(--color-earth-dim));
+  }
+
+  @keyframes trajectory-flow {
+    to { stroke-dashoffset: -22; }
+  }
+
+  @keyframes craft-strain {
+    to { transform: translate(207px, 77px); }
+  }
+
+  @media (max-width: 40rem) {
+    .fall-void-bg,
+    .fall-void {
+      clip-path: inset(0 0 43% 0);
+    }
+
+    .fall-void-bg {
+      inset: 0 0 43%;
+      width: 100%;
+      height: 62%;
+    }
+
+    .fall-void-stage::before,
+    .fall-void-stage::after {
+      right: 0;
+      bottom: 43%;
+    }
+
+    .earth-camera {
+      inset: 57% 0 0;
+      border-top: 1px solid rgb(255 255 255 / 20%);
+      border-left: 0;
+    }
+
+    .earth-camera-bg {
+      object-position: 65% 48%;
+    }
+
+    .perspective-divider {
+      top: 57%;
+      right: 0;
+      bottom: auto;
+      left: 0;
+      flex-direction: row;
+      width: auto;
+      height: 1px;
+    }
+
+    .perspective-divider i {
+      flex: 1;
+      height: 1px;
+      margin: 0 0.5rem;
+      background: linear-gradient(90deg, transparent, rgb(255 255 255 / 52%) 20% 80%, transparent);
+    }
+
+    .perspective-divider span {
+      writing-mode: initial;
+    }
+
+    .camera-id-you {
+      top: 10.8rem;
+      left: 0.75rem;
+    }
+
+    .camera-id-earth {
+      top: 0.65rem;
+      left: 0.75rem;
+    }
+
+    .earth-feed-caption {
+      bottom: 6.4rem;
+      left: 48%;
+      font-size: 0.58rem;
+    }
+
+    .lookback-view {
+      inset: 0 0 43%;
+    }
+
+    .lookback-copy {
+      top: 48%;
+      left: 48%;
+      max-width: 11rem;
+    }
+
+    .lookback-copy span {
+      font-size: 0.62rem;
+    }
+
+    .fall-hand {
+      bottom: 43%;
+      width: 11rem;
+    }
+
+    .horizon-crossed-panel {
+      top: 8.3rem;
+      width: 94vw;
+    }
+
+    .crossed-title-row {
+      padding: 0.45rem 0.65rem;
+    }
+
+    .crossed-perspective {
+      padding: 0.5rem 0.65rem;
+    }
+
+    .crossed-perspective strong {
+      font-size: 0.72rem;
+    }
+
+    .crossed-perspective p {
+      font-size: 0.62rem;
+      line-height: 1.4;
+    }
+
+    .escape-attempt {
+      bottom: 6.4rem;
+      width: 94vw;
+      padding: 0.4rem 0.6rem;
+    }
+
+    .trajectory-stage {
+      width: min(23rem, 88vw);
+    }
+
+    .trajectory-stage svg {
+      height: 5rem;
+    }
+
+    .escape-readout,
+    .escape-core-line {
+      font-size: 0.65rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lookback-view,
+    .earth-astronaut-now,
+    .engine-vector,
+    .future-trajectory,
+    .trajectory-craft {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* The horizon's causal rule is shared, but the physical journey is not.
+     These selectors make the selected mass visible throughout the fall:
+     stellar-mass ends in tidal breakup before the horizon; supermassive
+     preserves an intact local observer across it. */
+  .mass-fate-badge {
+    position: absolute;
+    z-index: 5;
+    bottom: 6.6rem;
+    left: clamp(12rem, 20vw, 19.5rem);
+    max-width: 22rem;
+    padding: 0.48rem 0.7rem;
+    border-left: 2px solid currentColor;
+    background: linear-gradient(90deg, rgb(2 5 12 / 82%), transparent);
+    font-size: 0.6rem;
+    line-height: 1.5;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 8px #000;
+  }
+
+  .mass-fate-badge span {
+    display: none;
+  }
+
+  .mass-fate-badge strong {
+    letter-spacing: 0.16em;
+  }
+
+  .experience[data-blackhole="stellar"] .mass-fate-stellar,
+  .experience[data-blackhole="supermassive"] .mass-fate-supermassive {
+    display: inline;
+  }
+
+  .experience[data-blackhole="stellar"] .mass-fate-badge {
+    color: var(--color-earth-strong, var(--color-earth));
+    box-shadow: -1rem 0 3rem rgb(255 87 51 / calc(var(--fall-progress, 0) * 32%));
+  }
+
+  .experience[data-blackhole="supermassive"] .mass-fate-badge {
+    color: var(--color-you);
+  }
+
+  .experience[data-blackhole="stellar"] .fall-hand {
+    transform-origin: 42% 100%;
+    transform:
+      scaleX(calc(1 - var(--fall-progress, 0) * 0.34))
+      scaleY(calc(1 + var(--fall-progress, 0) * 0.72))
+      translateY(calc(var(--fall-progress, 0) * -5%))
+      rotate(calc(var(--fall-progress, 0) * -5deg));
+    filter:
+      saturate(calc(1 + var(--fall-progress, 0) * 1.8))
+      contrast(calc(1 + var(--fall-progress, 0) * 0.5))
+      drop-shadow(0 0 calc(var(--fall-progress, 0) * 18px) rgb(255 92 54 / 70%));
+  }
+
+  .experience[data-blackhole="stellar"] .camera-id-you {
+    color: color-mix(
+      in srgb,
+      var(--color-you),
+      var(--color-earth-strong, var(--color-earth)) calc(var(--fall-progress, 0) * 78%)
+    );
+  }
+
+  .experience[data-blackhole="stellar"] .earth-astronaut {
+    transform:
+      translate(-50%, -50%)
+      scaleX(calc(1 - var(--fall-progress, 0) * 0.58))
+      scaleY(calc(1 + var(--fall-progress, 0) * 0.82))
+      scale(calc(1 - var(--fall-progress, 0) * 0.44));
+  }
+
+  .experience[data-blackhole="supermassive"] .fall-hand {
+    filter: drop-shadow(0 0 calc(var(--fall-progress, 0) * 12px) rgb(88 205 255 / 35%));
+  }
+
+  .stellar-breakup-visual {
+    position: absolute;
+    z-index: 4;
+    top: 49%;
+    left: 31%;
+    display: grid;
+    place-items: center;
+    width: 18rem;
+    aspect-ratio: 1;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+
+  .stellar-breakup-visual img {
+    position: relative;
+    z-index: 2;
+    width: 7rem;
+    border-radius: 50%;
+    opacity: 0;
+    filter: saturate(1.5) contrast(1.3) drop-shadow(0 0 26px rgb(255 101 58 / 65%));
+    transform: scaleX(0.45) scaleY(2);
+  }
+
+  .stellar-breakup-visual > span {
+    position: absolute;
+    z-index: 3;
+    bottom: 1.4rem;
+    color: var(--color-earth-strong, var(--color-earth));
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 8px #000;
+  }
+
+  .breakup-wave {
+    position: absolute;
+    width: 8rem;
+    aspect-ratio: 1;
+    border: 1px solid rgb(255 111 66 / 50%);
+    border-radius: 50%;
+    box-shadow: 0 0 28px rgb(255 82 45 / 24%);
+  }
+
+  .breakup-wave-two {
+    width: 13rem;
+    opacity: 0.45;
+  }
+
+  .experience[data-blackhole="stellar"][data-horizon="crossing"] .stellar-breakup-visual,
+  .experience[data-blackhole="stellar"][data-horizon="crossed"] .stellar-breakup-visual {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .experience[data-blackhole="stellar"][data-horizon="crossing"] .stellar-breakup-visual img {
+    animation: stellar-spaghettify 3.2s cubic-bezier(0.25, 0.7, 0.15, 1) both;
+  }
+
+  .experience[data-blackhole="stellar"][data-horizon="crossing"] .breakup-wave {
+    animation: breakup-wave 1.2s ease-out infinite;
+  }
+
+  .experience[data-blackhole="stellar"][data-horizon="crossing"] .breakup-wave-two {
+    animation-delay: 0.45s;
+  }
+
+  .experience[data-blackhole="stellar"][data-horizon="crossed"] .stellar-breakup-visual img {
+    opacity: 0.18;
+    transform: scaleX(0.18) scaleY(2.8);
+  }
+
+  .experience[data-blackhole="stellar"][data-horizon="crossed"] .fall-void-bg {
+    filter: saturate(0.4) brightness(0.28) hue-rotate(-24deg);
+  }
+
+  .experience[data-blackhole="stellar"][data-fate="tidal-breakup"] .horizon-crossed-panel,
+  .experience[data-blackhole="stellar"][data-fate="tidal-breakup"] .escape-attempt {
+    border-color: rgb(255 111 66 / 42%);
+    box-shadow:
+      inset 0 0 42px rgb(255 72 40 / 5%),
+      0 24px 80px rgb(0 0 0 / 68%);
+  }
+
+  .experience[data-blackhole="stellar"] .crossed-you {
+    box-shadow: inset 3px 0 var(--color-earth-dim);
+  }
+
+  .experience[data-blackhole="stellar"] .crossed-you .crossed-label {
+    color: var(--color-earth-strong, var(--color-earth));
+  }
+
+  .stellar-fate-visual {
+    position: relative;
+    display: none;
+    grid-template-columns: auto minmax(5rem, 1fr) auto;
+    align-items: center;
+    gap: 0.65rem;
+    width: min(28rem, 72vw);
+    min-height: 4.2rem;
+  }
+
+  .experience[data-blackhole="stellar"] .stellar-fate-visual {
+    display: grid;
+  }
+
+  .experience[data-blackhole="stellar"] .trajectory-stage {
+    display: none;
+  }
+
+  .stellar-fate-body {
+    width: 1.15rem;
+    height: 3.8rem;
+    border-radius: 50%;
+    background: linear-gradient(var(--color-earth), rgb(255 255 255 / 80%), var(--color-earth));
+    box-shadow: 0 0 18px rgb(255 92 52 / 65%);
+    transform: scaleX(0.32) rotate(9deg);
+  }
+
+  .stellar-fate-signal {
+    position: relative;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      var(--color-earth),
+      rgb(255 142 78 / 42%) 45%,
+      rgb(255 142 78 / 4%)
+    );
+  }
+
+  .stellar-fate-signal::before,
+  .stellar-fate-signal::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 0.45rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-earth);
+    box-shadow: 0 0 10px var(--color-earth);
+    transform: translateY(-50%);
+  }
+
+  .stellar-fate-signal::before {
+    left: 18%;
+  }
+
+  .stellar-fate-signal::after {
+    left: 58%;
+    opacity: 0.2;
+  }
+
+  .stellar-fate-earth {
+    display: grid;
+    place-items: center;
+    width: 2.7rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--color-you-dim);
+    border-radius: 50%;
+    color: var(--color-you);
+    font-size: 0.48rem;
+    box-shadow: inset 0 0 16px rgb(72 168 255 / 20%);
+  }
+
+  .stellar-fate-visual strong {
+    position: absolute;
+    right: 0;
+    bottom: -0.15rem;
+    left: 0;
+    color: var(--color-text-faint);
+    font-size: 0.52rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .experience[data-blackhole="stellar"] .escape-attempt[data-escape="attempting"] .stellar-fate-signal {
+    animation: signal-resolve 600ms linear infinite;
+  }
+
+  .experience[data-blackhole="stellar"] .escape-attempt[data-escape="inevitable"] .stellar-fate-signal {
+    opacity: 0.16;
+  }
+
+  @keyframes stellar-spaghettify {
+    0% { opacity: 0; transform: scaleX(0.8) scaleY(0.8); }
+    35% { opacity: 0.9; transform: scaleX(0.52) scaleY(1.45); }
+    76% { opacity: 0.48; transform: scaleX(0.2) scaleY(2.55); }
+    100% { opacity: 0.16; transform: scaleX(0.1) scaleY(3.2); }
+  }
+
+  @keyframes breakup-wave {
+    from { opacity: 0.65; transform: scale(0.6); }
+    to { opacity: 0; transform: scale(1.35); }
+  }
+
+  @keyframes signal-resolve {
+    to { filter: hue-rotate(-22deg) brightness(0.55); }
+  }
+
+  @media (max-width: 40rem) {
+    .mass-fate-badge {
+      bottom: 43.7%;
+      left: 0.75rem;
+      max-width: 16rem;
+      font-size: 0.5rem;
+    }
+
+    .stellar-breakup-visual {
+      top: 33%;
+      left: 50%;
+      width: 12rem;
+    }
+
+    .stellar-breakup-visual img {
+      width: 4.8rem;
+    }
+
+    .stellar-fate-visual {
+      width: min(22rem, 86vw);
+      min-height: 3.2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stellar-breakup-visual,
+    .stellar-breakup-visual img,
+    .breakup-wave,
+    .stellar-fate-signal {
+      animation: none !important;
+      transition: none !important;
     }
   }
 </style>
