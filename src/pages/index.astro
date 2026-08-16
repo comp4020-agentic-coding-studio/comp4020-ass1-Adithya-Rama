@@ -1594,18 +1594,6 @@ const supermassiveStats = [
     }
   }
 
-  @keyframes connector-pulse-vertical {
-    0% {
-      top: 0;
-      opacity: 1;
-    }
-
-    100% {
-      top: calc(100% - 10px);
-      opacity: 0;
-    }
-  }
-
   @keyframes result-reveal {
     from {
       opacity: 0;
@@ -1632,22 +1620,39 @@ const supermassiveStats = [
 
   @media (max-width: 40rem) {
     .layer-hud {
-      padding: var(--space-lg) var(--space-sm) var(--space-lg);
+      padding: var(--space-md) var(--space-sm) var(--space-md);
     }
 
     .duality-labels {
-      top: var(--space-2xl);
+      top: var(--space-lg);
       transform: none;
       padding: 0 var(--space-md);
     }
 
     .hero-narrative {
       font-size: var(--text-small);
+      line-height: 1.6;
     }
 
     .scene {
-      gap: var(--space-md);
-      padding: var(--space-xl) var(--space-sm);
+      gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-sm);
+    }
+
+    .hero-cta {
+      flex-direction: column;
+      width: 100%;
+      gap: var(--space-2xs);
+    }
+
+    .hero-cta .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: var(--space-sm) var(--space-md);
+      min-height: 2.75rem;
     }
 
     .blackhole-options {
@@ -1656,77 +1661,119 @@ const supermassiveStats = [
       gap: var(--space-md);
     }
 
+    /* Sync/fall stages stay side-by-side (per the mobile reference mockup)
+       rather than stacking -- density comes from hiding decorative art and
+       shrinking the connector, not from collapsing to one column. */
     .sync-stage {
-      flex-direction: column;
-      gap: var(--space-md);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: var(--space-2xs);
+      max-width: 100%;
     }
 
     .sync-astronaut-arm {
-      bottom: -1.5rem;
-      width: 4rem;
+      display: none;
     }
 
     .sync-connector {
-      width: 2px;
-      height: 3rem;
-    }
-
-    .sync-connector-line {
-      background: linear-gradient(to bottom, var(--color-you-dim), var(--color-earth-dim));
-    }
-
-    .sync-connector-pulse {
-      top: 0;
-      left: 50%;
-      margin-top: 0;
-      margin-left: -5px;
-    }
-
-    .sync-stage.synced .sync-connector-pulse {
-      animation-name: connector-pulse-vertical;
+      width: 1.25rem;
+      height: 2px;
     }
 
     .fall-stage {
-      flex-direction: column;
-      gap: var(--space-md);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: var(--space-2xs);
+      max-width: 100%;
     }
 
-    .fall-hand {
-      width: 3.5rem;
-    }
-
+    .fall-hand,
     .fall-astronaut-stack {
-      width: 4.5rem;
+      display: none;
     }
 
-    .future-cone {
-      width: 9rem;
+    .fall-readout {
+      font-size: var(--text-label);
     }
 
     .signal-track {
-      width: 2px;
-      height: 3rem;
+      width: 1.25rem;
+      height: 2px;
     }
 
-    .signal-track-line {
-      background: linear-gradient(to bottom, var(--color-you-dim), var(--color-earth-dim));
+    .escape-attempt {
+      max-width: 100%;
+      gap: var(--space-2xs);
     }
 
-    .signal-pulse {
-      top: 0;
-      left: 50%;
-      margin-top: 0;
-      margin-left: -5px;
+    .future-cone {
+      width: 7rem;
     }
 
-    .signal-pulse.is-arriving {
-      top: calc(100% - 10px);
-      left: 50%;
-      transform: scaleY(var(--signal-stretch, 2));
+    .escape-thrust-meter {
+      width: 7rem;
+    }
+
+    .fall-timeline {
+      gap: var(--space-2xs);
+      font-size: 0.625rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .signal-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3xs) var(--space-sm);
+    }
+
+    .signal-stat dt {
+      font-size: 0.625rem;
+    }
+
+    .signal-stat dd {
+      font-size: var(--text-label);
+    }
+
+    /* Grid tracks (not flex + fixed max-width) are what keep this from
+       overflowing a narrow viewport -- each column sizes to its share of
+       the container instead of to comparison-detail's own max-width. */
+    .comparison-pair {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-sm);
+      width: 100%;
+    }
+
+    .comparison-side {
+      min-width: 0;
+    }
+
+    .comparison-image {
+      width: 100%;
+      max-width: 5.5rem;
+    }
+
+    .comparison-detail {
+      max-width: none;
+      font-size: var(--text-label);
+    }
+  }
+
+  @media (max-width: 26rem) {
+    .sync-clock {
+      font-size: 1.35rem;
+      letter-spacing: 0.02em;
     }
 
     .comparison-pair {
-      gap: var(--space-md);
+      gap: var(--space-2xs);
+    }
+
+    .comparison-image {
+      max-width: 4.5rem;
     }
   }
 
