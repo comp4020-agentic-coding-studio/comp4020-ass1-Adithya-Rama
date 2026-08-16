@@ -8,13 +8,15 @@
     "build": "astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
-    "check": "pnpm typecheck && pnpm build && oxlint --ignore-path .gitignore && stylelint \"**/*.css\" --ignore-path .gitignore --allow-empty-input && vitest run",
+    "check": "pnpm typecheck && pnpm build && oxlint --ignore-path .gitignore && stylelint \"**/*.css\" --ignore-path .gitignore --allow-empty-input && vitest run && playwright test",
     "check:evidence": "node scripts/check-evidence.ts",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "optimize-images": "node scripts/optimize-images.mjs"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@playwright/test": "^1.62.1",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^24.0.0",
     "astro": "^7.2.0",
