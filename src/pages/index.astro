@@ -586,7 +586,12 @@ const supermassiveStats = [
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    /* safe center: centers short scenes like the current `center` did, but
+       falls back to start-alignment once content exceeds the viewport --
+       plain `center` in a scrollable flex column lets the *top* overflow
+       clip with no way to scroll up to it (browsers only grant scrollable
+       overflow on the far/end side of a centered flex axis). */
+    justify-content: safe center;
     gap: var(--space-lg);
     padding: var(--space-2xl) var(--space-md);
     overflow-y: auto;
@@ -623,9 +628,9 @@ const supermassiveStats = [
 
   .scene-question {
     margin: 0;
-    font-size: var(--text-h2);
-    color: var(--color-text);
-    font-weight: 600;
+    font-size: var(--text-body);
+    color: var(--color-text-dim);
+    font-weight: 400;
   }
 
   .scene-hint {
@@ -642,8 +647,8 @@ const supermassiveStats = [
   .hero-title {
     margin: 0;
     font-size: var(--text-hero);
-    letter-spacing: 0.12em;
-    font-weight: 700;
+    letter-spacing: 0.3em;
+    font-weight: 400;
     color: var(--color-text);
     text-shadow: var(--glow-soft);
     animation: title-reveal 1.4s var(--ease-standard) both;
@@ -679,8 +684,9 @@ const supermassiveStats = [
   .scene-selecting h2 {
     margin: 0;
     font-size: var(--text-h2);
+    letter-spacing: 0.03em;
     color: var(--color-text);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .scene-selecting-meta {
@@ -705,6 +711,21 @@ const supermassiveStats = [
     flex-direction: column;
     align-items: center;
     gap: var(--space-2xs);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+    background: var(--surface-glass-bg);
+    backdrop-filter: blur(var(--surface-glass-blur));
+  }
+
+  .sync-side-you {
+    border-color: var(--color-you-dim);
+    box-shadow: var(--glow-you);
+  }
+
+  .sync-side-earth {
+    border-color: var(--color-earth-dim);
+    box-shadow: var(--glow-earth);
   }
 
   .sync-label {
@@ -834,7 +855,22 @@ const supermassiveStats = [
     flex: 1;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-2xs);
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+    background: var(--surface-glass-bg);
+    backdrop-filter: blur(var(--surface-glass-blur));
+  }
+
+  .fall-side-you {
+    border-color: var(--color-you-dim);
+    box-shadow: var(--glow-you);
+  }
+
+  .fall-side-earth {
+    border-color: var(--color-earth-dim);
+    box-shadow: var(--glow-earth);
   }
 
   .fall-side-you .sync-label {
@@ -948,8 +984,13 @@ const supermassiveStats = [
     position: relative;
     width: 100%;
     max-width: 32rem;
-    padding: var(--space-md);
+    flex-shrink: 0;
+    padding: var(--space-md) var(--space-lg);
     border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+    background: var(--surface-glass-bg);
+    backdrop-filter: blur(var(--surface-glass-blur));
+    box-shadow: var(--glow-soft);
     overflow: hidden;
     text-align: center;
     opacity: 0;
@@ -1008,6 +1049,11 @@ const supermassiveStats = [
     gap: var(--space-xs);
     width: 100%;
     max-width: 26rem;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+    background: var(--surface-glass-bg);
+    backdrop-filter: blur(var(--surface-glass-blur));
     opacity: 0;
     transition: opacity var(--duration-medium) var(--ease-standard);
   }
@@ -1156,7 +1202,11 @@ const supermassiveStats = [
     display: flex;
     gap: var(--space-sm);
     margin: 0;
-    padding: 0;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: 999px;
+    border: var(--border-hairline);
+    background: var(--surface-glass-bg);
+    backdrop-filter: blur(var(--surface-glass-blur));
     list-style: none;
     font-size: var(--text-label);
     letter-spacing: 0.12em;
@@ -1265,7 +1315,14 @@ const supermassiveStats = [
     position: relative;
     width: 100%;
     max-width: 32rem;
-    padding: var(--space-sm) 0;
+    flex-shrink: 0;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: var(--border-hairline);
+    background: var(--surface-glass-bg);
+    backdrop-filter: blur(var(--surface-glass-blur));
+    box-shadow: var(--glow-soft);
+    overflow: hidden;
   }
 
   .signal-wave-bg {
@@ -1705,7 +1762,7 @@ const supermassiveStats = [
 
     .scene {
       gap: var(--space-sm);
-      padding: var(--space-lg) var(--space-sm);
+      padding: var(--space-xl) var(--space-sm) var(--space-lg);
     }
 
     .hero-cta {
@@ -1739,6 +1796,11 @@ const supermassiveStats = [
       align-items: center;
       gap: var(--space-2xs);
       max-width: 100%;
+    }
+
+    .sync-side,
+    .fall-side {
+      padding: var(--space-sm) var(--space-xs);
     }
 
     .sync-astronaut-arm {
@@ -1775,6 +1837,11 @@ const supermassiveStats = [
     .escape-attempt {
       max-width: 100%;
       gap: var(--space-2xs);
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .signal-panel {
+      padding: var(--space-sm) var(--space-md);
     }
 
     .future-cone {
