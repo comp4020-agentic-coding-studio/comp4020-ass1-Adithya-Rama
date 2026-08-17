@@ -63,6 +63,43 @@ test("app loads and offers its hero call to action", async ({ page }) => {
   await expect(page.getByTestId("interaction")).toBeVisible();
 });
 
+test("crossing while a signal is in flight cancels its stale completion callback", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await page.getByTestId("interaction").click();
+  await chooseBlackHole(page, "supermassive");
+  await page.getByTestId("start-descent").click();
+  await page.getByTestId("sync-clocks").click();
+  await page.getByTestId("begin-descent").click();
+
+  await holdDescend(page, Math.ceil(MAX_FALL_PROGRESS / DESCEND_RATE_PER_SECOND) + 1);
+  await page.getByTestId("send-signal").click();
+  await expect(page.locator("#signal-outgoing")).toHaveText("Sending");
+  await expect(page.getByTestId("send-signal")).toBeDisabled();
+
+  // Cross before the near-horizon signal's 3.3s timeout can resolve. The
+  // crossing transition must own and cancel that timer, resolving the signal
+  // as lost immediately.
+  await page.locator("#descend-control").click();
+  await expect(page.locator("#horizon-crossed-panel")).toHaveAttribute("aria-hidden", "false");
+  await expect(page.locator("#signal-outgoing")).toHaveText("Lost");
+  await expect(page.locator("#signal-observed")).toHaveText(
+    "Lost — horizon crossed mid-transit",
+  );
+  await expect(page.locator("#signal-received")).toHaveText("Never arrives");
+
+  // Wait beyond the original signal timeout. A leaked callback would now
+  // overwrite the lost state and re-enable the control.
+  await page.waitForTimeout(3_500);
+  await expect(page.getByTestId("send-signal")).toBeDisabled();
+  await expect(page.locator("#signal-outgoing")).toHaveText("Lost");
+  await expect(page.locator("#signal-observed")).toHaveText(
+    "Lost — horizon crossed mid-transit",
+  );
+  await expect(page.locator("#signal-received")).toHaveText("Never arrives");
+});
+
 test("choosing a black hole unlocks descent; clocks sync; descending diverges them; a signal changes visible state; a resize mid-fall doesn't disrupt it", async ({
   page,
 }) => {
