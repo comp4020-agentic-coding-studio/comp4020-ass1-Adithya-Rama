@@ -12,11 +12,13 @@ a numerical physics simulation.
 ## The moments that mattered
 
 **Static scenes became a continuous mechanic.** The early version changed
-background images after button presses. More frames and smoother fades were
-the obvious fix, but they would still make the visitor watch a slideshow. I
-instead asked the agent to make movement itself carry the explanation. Wheel,
-drag and keyboard input now feed one reversible descent value; a procedural
-canvas, camera scale, lensing and readouts all respond continuously
+background images after button presses. I distilled the correction into a
+concrete direction: mouse-wheel travel, not image switching, had to make the
+approach visible. More frames and smoother fades were the obvious fix, but
+they would still make the visitor watch a slideshow. I rejected that model
+and made movement itself carry the explanation. Wheel, drag and keyboard input
+now feed one reversible descent value; a procedural canvas, camera scale,
+lensing and readouts all respond continuously
 ([`5b74342`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/5b74342)). I then turned the lesson into input-normalisation and animation-loop
 rules in the harness
 ([`e7bc9ae`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/e7bc9ae)). I knew this was right because Playwright compared separated descent
@@ -34,13 +36,14 @@ failure became a permanent browser regression test in `pnpm check`
 ([`52148ef`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/52148ef)).
 
 **Labels became genuinely different perspectives, and copy became a real
-branch.** At one point YOU and EARTH were labels over essentially the same
-picture. Worse, the stellar outcome said the astronaut was destroyed before
-the horizon, but the shared interaction still showed that astronaut crossing
-intact and firing engines. Changing colours or final text was the obvious
-cosmetic response. Instead I split the cameras and causal behaviour: YOU
-crosses locally while Earth receives older, redder, fainter afterimages;
-stellar mass ends in tidal breakup with no engine control, while supermassive
+branch.** The next correction was that both journeys still felt the same:
+YOU and EARTH were labels over essentially the same picture, and both
+black-hole choices used the same intact post-horizon interaction. That also
+contradicted the stellar result text, which said the astronaut was destroyed
+before the horizon. Changing colours or final copy was the obvious cosmetic
+response. I rejected the shared flow and split the cameras and causal
+behaviour: YOU crosses locally while Earth receives older, redder, fainter
+afterimages; stellar mass ends in tidal breakup with no engine control, while supermassive
 mass permits intact crossing before escape still becomes impossible
 ([`af5d43e`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/af5d43e)). I added the "labels are not viewpoints" and mutually-exclusive-branch
 rule to `CLAUDE.md`
@@ -54,4 +57,5 @@ easy responses were to ignore those errors or remove the base path. Instead I
 changed CI to stage the build beneath the repository-name directory and serve
 its parent, reproducing the public URL structure
 ([`588e336`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Adithya-Rama/commit/588e336)). The check now validates the same absolute paths a marker's browser
-will request rather than a more convenient local topology.
+will request rather than a more convenient local topology. I accepted it only
+after the public workflow's link crawl and Pages deployment both passed.

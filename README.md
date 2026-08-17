@@ -1,64 +1,58 @@
-# COMP4020 static prototype template
+# FALL — One Journey. Two Realities.
 
-A starter template for static-site prototypes in **COMP4020 / COMP8020 Agentic
-Coding Studio**. The course provisions a repo from this template for each
-deliverable --- you don't create it yourself. The `start` course skill clones it
-for you; from there, build your prototype and deploy it to GitHub Pages.
+[**Open the live experience**](https://comp4020-agentic-coding-studio.github.io/comp4020-ass1-Adithya-Rama/)
 
-## CI and Pages only turn on when you ship
+FALL is an interactive explainer about approaching a black hole. It follows
+the same event through two sources of evidence: the astronaut's local
+experience and the progressively older, redder and fainter light received on
+Earth.
 
-Your repo starts private, and both CI jobs (`check` and `deploy`) are gated on
-it being public. While private, a push to `main` runs nothing in CI ---
-`pnpm check` (below) is your feedback loop until then. When you're ready, the
-course's `/ship` skill flips the repo public, turns on GitHub Pages, and
-dispatches the deploy for you; there's nothing to configure in the Pages
-settings yourself. From that point, every push to `main` builds and deploys, and
-the deploy step prints your live URL and checks it returns 200.
+## Point of view
 
-## What gets marked
+An event horizon is not a visible wall, and the astronaut and Earth do not
+occupy contradictory realities. They have access to different information.
+Black-hole mass changes whether tidal forces destroy the astronaut before the
+horizon, but it does not change the horizon's causal boundary.
 
-The deployed site is the deliverable, assessed live in Chrome at two fixed
-viewports --- see the course website's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#marking-environment)
-for the details.
+The visitor learns this by controlling the descent rather than advancing
+through a slideshow. Wheel, drag and keyboard input continuously alter the
+camera, lensing, clocks, signal and tidal readouts. The stellar and
+supermassive choices then branch at their first different physical
+consequence.
+
+## Core journey
+
+1. Choose a stellar-mass or supermassive black hole.
+2. Synchronise the astronaut and Earth clocks.
+3. Descend with wheel, drag, hold or keyboard controls.
+4. Turn back toward Earth and transmit a signal.
+5. Reach tidal breakup or cross the event horizon, depending on the choice.
+6. Test the remaining trajectory and compare both outcomes.
 
 ## Quick start
 
 ```sh
-mise install       # supported path: install the template's Node and pnpm
+mise install
 pnpm install
-pnpm dev        # local dev server
-pnpm check      # most of what CI runs (links, secrets, evidence and deploy are CI-only)
-pnpm build      # produce dist/ (what gets deployed)
-pnpm dlx linkinator ./dist --silent   # reproduce CI's links check before you push
+pnpm dev
+pnpm check
+pnpm check:evidence
+pnpm build
 ```
 
-`mise` is the course's recommended runtime manager. If you use another manager
-or the official installers, that is fine: provide the Node and pnpm versions in
-`mise.toml`, then run the same commands. Tutor support reproduces runtime
-problems with mise.
+The static client-side build uses Astro, TypeScript, semantic HTML, CSS and a
+small procedural canvas renderer. `pnpm check` runs type checking, production
+build, linting, invariant tests and desktop/mobile Playwright journeys.
 
-## What's here
+## Process evidence
 
-- `index.html`, `styles.css`, `main.ts` --- a minimal starting site. Replace it.
-- `mise.toml` --- the tested Node and pnpm versions for this template.
-- `spec/` --- what the checks are for (`README.md`), the shipped invariants
-  (`invariants.test.ts`), and a replaceable starter test (`starter.test.ts`);
-  your own spec tests live alongside them.
-- `CLAUDE.md` --- orients your coding agent: what the checks mean and how to
-  work here. Yours to grow.
-- `PROCESS.md` --- a template for your process overview, showing the
-  cited-moment format. Replace it with your own; `pnpm check:evidence` verifies
-  your citations resolve.
-- `.github/workflows/checks.yml` --- the CI sensors that run on every push once
-  your repo is public, and the GitHub Pages deploy.
-- `.githooks/pre-commit` --- blocks any commit that contains something shaped
-  like an API key, so your COMP4020 key can't end up in a public repo. Installed
-  automatically by `pnpm install`.
+- [Process overview](PROCESS.md) — four cited corrections and how they were verified
+- [Agent harness](CLAUDE.md) — project rules grown from observed failures
+- [Assignment reflection](reflections/assignment-1.md) — the breakthrough and its before/after
+- [Browser contract](e2e/core-contract.e2e.ts) — the complete journey and mutually exclusive fates
 
-This template is SSG-agnostic: it's plain HTML/CSS/TypeScript on Vite, so you
-can add Astro, Eleventy, or any static generator later without changing how it
-deploys. TypeScript is the course default over plain JavaScript: the types are
-extra backpressure, and your agent feels it before you do.
+## Scientific scope
 
-See the course site for how the checks map to each week of the course.
+This is a conceptual visualisation, not a numerical general-relativity solver.
+Its curves and percentages communicate direction and contrast; they are
+deliberately labelled conceptual rather than presented as measurements.
